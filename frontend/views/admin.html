@@ -1,0 +1,201 @@
+<div class="admin-container">
+    <div class="admin-header">
+      <h1 class="admin-title">Admin Dashboard</h1>
+      <p class="admin-subtitle">Manage users, events, and clubs</p>
+    </div>
+
+
+    <div class="tab-navigation">
+      <button class="tab-btn active" data-tab="users">Users</button>
+      <button class="tab-btn" data-tab="events">Events</button>
+      <button class="tab-btn" data-tab="clubs">Clubs</button>
+    </div>
+
+
+    <div class="tab-content active" id="users-tab">
+      <div class="section-header">
+        <h2 class="section-title">Users Management</h2>
+        <button class="add-btn" id="add-user-btn">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <line x1="10" y1="4" x2="10" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="4" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Add User
+        </button>
+      </div>
+
+      <div class="table-scroll-wrapper">
+        <div class="data-table users-table">
+          <div class="table-header">
+            <div>Name</div>
+            <div>Email</div>
+            <div>Role</div>
+            <div>Status</div>
+            <div>Actions</div>
+          </div>
+          <div id="users-tbody"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="events-tab">
+      <div class="section-header">
+        <h2 class="section-title">Events Management</h2>
+        <button class="add-btn" id="add-event-btn">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <line x1="10" y1="4" x2="10" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="4" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Add Event
+        </button>
+      </div>
+
+      <div class="table-scroll-wrapper">
+        <div class="data-table events-table">
+          <div class="table-header">
+            <div>Event Name</div>
+            <div>Club</div>
+            <div>Date</div>
+            <div>Status</div>
+            <div>Actions</div>
+          </div>
+          <div id="events-tbody"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="clubs-tab">
+      <div class="section-header">
+        <h2 class="section-title">Clubs Management</h2>
+        <button class="add-btn" id="add-club-btn">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <line x1="10" y1="4" x2="10" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="4" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Add Club
+        </button>
+      </div>
+
+      <div class="table-scroll-wrapper">
+        <div class="data-table clubs-table">
+          <div class="table-header">
+            <div>Club Name</div>
+            <div>Description</div>
+            <div>Members</div>
+            <div>Actions</div>
+          </div>
+          <div id="clubs-tbody"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Modal -->
+  <div class="modal" id="user-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="user-modal-title">Add User</h3>
+        <button class="close-btn" id="close-user-modal">&times;</button>
+      </div>
+      <form id="user-form">
+        <input type="hidden" id="user-id">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-input" id="user-name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="user-email" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-select" id="user-role" required>
+            <option value="Student">Student</option>
+            <option value="Admin">Admin</option>
+            <option value="Club Leader">Club Leader</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="user-status" required>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="submit-btn">Save</button>
+          <button type="button" class="cancel-btn cancel-user-modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Event Modal -->
+  <div class="modal" id="event-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="event-modal-title">Add Event</h3>
+        <button class="close-btn" id="close-event-modal">&times;</button>
+      </div>
+      <form id="event-form">
+        <input type="hidden" id="event-id">
+        <div class="form-group">
+          <label class="form-label">Event Name</label>
+          <input type="text" class="form-input" id="event-name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Club</label>
+          <select class="form-select" id="event-club" required>
+            <option value="Tech Innovation Club">Tech Innovation Club</option>
+            <option value="Business Society">Business Society</option>
+            <option value="Arts Club">Arts Club</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-input" id="event-date" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="event-status" required>
+            <option value="Upcoming">Upcoming</option>
+            <option value="Ongoing">Ongoing</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="submit-btn">Save</button>
+          <button type="button" class="cancel-btn cancel-event-modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Club Modal -->
+  <div class="modal" id="club-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="club-modal-title">Add Club</h3>
+        <button class="close-btn" id="close-club-modal">&times;</button>
+      </div>
+      <form id="club-form">
+        <input type="hidden" id="club-id">
+        <div class="form-group">
+          <label class="form-label">Club Name</label>
+          <input type="text" class="form-input" id="club-name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" id="club-description" required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Members</label>
+          <input type="number" class="form-input" id="club-members" required min="0">
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="submit-btn">Save</button>
+          <button type="button" class="cancel-btn cancel-club-modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
