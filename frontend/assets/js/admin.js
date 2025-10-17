@@ -18,10 +18,14 @@ let clubs = [
 
 let editMode = false;
 let editId = null;
-
+let isAdminInitialized = false;
 
 function renderUsers() {
   const tbody = document.getElementById('users-tbody');
+  if (!tbody) {
+    console.warn('users-tbody not found');
+    return;
+  }
   tbody.innerHTML = '';
   
   users.forEach(user => {
@@ -43,6 +47,10 @@ function renderUsers() {
 
 function renderEvents() {
   const tbody = document.getElementById('events-tbody');
+  if (!tbody) {
+    console.warn('events-tbody not found');
+    return;
+  }
   tbody.innerHTML = '';
   
   events.forEach(event => {
@@ -64,6 +72,10 @@ function renderEvents() {
 
 function renderClubs() {
   const tbody = document.getElementById('clubs-tbody');
+  if (!tbody) {
+    console.warn('clubs-tbody not found');
+    return;
+  }
   tbody.innerHTML = '';
   
   clubs.forEach(club => {
@@ -80,162 +92,6 @@ function renderClubs() {
     `;
     tbody.appendChild(row);
   });
-}
-
-
-function init() {
-
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const tabName = this.getAttribute('data-tab');
-      
-
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      
-
-      this.classList.add('active');
-      document.getElementById(tabName + '-tab').classList.add('active');
-    });
-  });
-
-
-  document.getElementById('add-user-btn').addEventListener('click', () => {
-    editMode = false;
-    editId = null;
-    document.getElementById('user-modal-title').textContent = 'Add User';
-    document.getElementById('user-form').reset();
-    document.getElementById('user-id').value = '';
-    document.getElementById('user-modal').classList.add('active');
-  });
-
-  document.getElementById('close-user-modal').addEventListener('click', () => {
-    document.getElementById('user-modal').classList.remove('active');
-  });
-
-  document.querySelectorAll('.cancel-user-modal').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('user-modal').classList.remove('active');
-    });
-  });
-
-  document.getElementById('user-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const user = {
-      name: document.getElementById('user-name').value,
-      email: document.getElementById('user-email').value,
-      role: document.getElementById('user-role').value,
-      status: document.getElementById('user-status').value
-    };
-    
-    if (editMode && editId) {
-      const index = users.findIndex(u => u.id === editId);
-      users[index] = { ...users[index], ...user };
-    } else {
-      user.id = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
-      users.push(user);
-    }
-    
-    renderUsers();
-    document.getElementById('user-modal').classList.remove('active');
-  });
-
-
-  document.getElementById('add-event-btn').addEventListener('click', () => {
-    editMode = false;
-    editId = null;
-    document.getElementById('event-modal-title').textContent = 'Add Event';
-    document.getElementById('event-form').reset();
-    document.getElementById('event-id').value = '';
-    document.getElementById('event-modal').classList.add('active');
-  });
-
-  document.getElementById('close-event-modal').addEventListener('click', () => {
-    document.getElementById('event-modal').classList.remove('active');
-  });
-
-  document.querySelectorAll('.cancel-event-modal').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('event-modal').classList.remove('active');
-    });
-  });
-
-  document.getElementById('event-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const event = {
-      name: document.getElementById('event-name').value,
-      club: document.getElementById('event-club').value,
-      date: document.getElementById('event-date').value,
-      status: document.getElementById('event-status').value
-    };
-    
-    if (editMode && editId) {
-      const index = events.findIndex(ev => ev.id === editId);
-      events[index] = { ...events[index], ...event };
-    } else {
-      event.id = events.length > 0 ? Math.max(...events.map(e => e.id)) + 1 : 1;
-      events.push(event);
-    }
-    
-    renderEvents();
-    document.getElementById('event-modal').classList.remove('active');
-  });
-
-
-  document.getElementById('add-club-btn').addEventListener('click', () => {
-    editMode = false;
-    editId = null;
-    document.getElementById('club-modal-title').textContent = 'Add Club';
-    document.getElementById('club-form').reset();
-    document.getElementById('club-id').value = '';
-    document.getElementById('club-modal').classList.add('active');
-  });
-
-  document.getElementById('close-club-modal').addEventListener('click', () => {
-    document.getElementById('club-modal').classList.remove('active');
-  });
-
-  document.querySelectorAll('.cancel-club-modal').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('club-modal').classList.remove('active');
-    });
-  });
-
-  document.getElementById('club-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const club = {
-      name: document.getElementById('club-name').value,
-      description: document.getElementById('club-description').value,
-      members: parseInt(document.getElementById('club-members').value)
-    };
-    
-    if (editMode && editId) {
-      const index = clubs.findIndex(c => c.id === editId);
-      clubs[index] = { ...clubs[index], ...club };
-    } else {
-      club.id = clubs.length > 0 ? Math.max(...clubs.map(c => c.id)) + 1 : 1;
-      clubs.push(club);
-    }
-    
-    renderClubs();
-    document.getElementById('club-modal').classList.remove('active');
-  });
-
-
-  document.querySelectorAll('.modal').forEach(modal => {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.classList.remove('active');
-      }
-    });
-  });
-
-  renderUsers();
-  renderEvents();
-  renderClubs();
 }
 
 function editUser(id) {
@@ -300,9 +156,194 @@ function deleteClub(id) {
   }
 }
 
+function initAdmin() {
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
+  if (isAdminInitialized) {
+    console.log('Admin already initialized, skipping...');
+    renderUsers();
+    renderEvents();
+    renderClubs();
+    return;
+  }
+
+  console.log('Initializing Admin panel...');
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const tabName = this.getAttribute('data-tab');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById(tabName + '-tab').classList.add('active');
+    });
+  });
+
+  const addUserBtn = document.getElementById('add-user-btn');
+  if (addUserBtn) {
+    addUserBtn.addEventListener('click', () => {
+      editMode = false;
+      editId = null;
+      document.getElementById('user-modal-title').textContent = 'Add User';
+      document.getElementById('user-form').reset();
+      document.getElementById('user-id').value = '';
+      document.getElementById('user-modal').classList.add('active');
+    });
+  }
+
+  const closeUserModal = document.getElementById('close-user-modal');
+  if (closeUserModal) {
+    closeUserModal.addEventListener('click', () => {
+      document.getElementById('user-modal').classList.remove('active');
+    });
+  }
+
+  document.querySelectorAll('.cancel-user-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('user-modal').classList.remove('active');
+    });
+  });
+
+  const userForm = document.getElementById('user-form');
+  if (userForm) {
+    userForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const user = {
+        name: document.getElementById('user-name').value,
+        email: document.getElementById('user-email').value,
+        role: document.getElementById('user-role').value,
+        status: document.getElementById('user-status').value
+      };
+      
+      if (editMode && editId) {
+        const index = users.findIndex(u => u.id === editId);
+        users[index] = { ...users[index], ...user };
+      } else {
+        user.id = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+        users.push(user);
+      }
+      
+      renderUsers();
+      document.getElementById('user-modal').classList.remove('active');
+    });
+  }
+
+  const addEventBtn = document.getElementById('add-event-btn');
+  if (addEventBtn) {
+    addEventBtn.addEventListener('click', () => {
+      editMode = false;
+      editId = null;
+      document.getElementById('event-modal-title').textContent = 'Add Event';
+      document.getElementById('event-form').reset();
+      document.getElementById('event-id').value = '';
+      document.getElementById('event-modal').classList.add('active');
+    });
+  }
+
+  const closeEventModal = document.getElementById('close-event-modal');
+  if (closeEventModal) {
+    closeEventModal.addEventListener('click', () => {
+      document.getElementById('event-modal').classList.remove('active');
+    });
+  }
+
+  document.querySelectorAll('.cancel-event-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('event-modal').classList.remove('active');
+    });
+  });
+
+  const eventForm = document.getElementById('event-form');
+  if (eventForm) {
+    eventForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const event = {
+        name: document.getElementById('event-name').value,
+        club: document.getElementById('event-club').value,
+        date: document.getElementById('event-date').value,
+        status: document.getElementById('event-status').value
+      };
+      
+      if (editMode && editId) {
+        const index = events.findIndex(ev => ev.id === editId);
+        events[index] = { ...events[index], ...event };
+      } else {
+        event.id = events.length > 0 ? Math.max(...events.map(e => e.id)) + 1 : 1;
+        events.push(event);
+      }
+      
+      renderEvents();
+      document.getElementById('event-modal').classList.remove('active');
+    });
+  }
+
+  const addClubBtn = document.getElementById('add-club-btn');
+  if (addClubBtn) {
+    addClubBtn.addEventListener('click', () => {
+      editMode = false;
+      editId = null;
+      document.getElementById('club-modal-title').textContent = 'Add Club';
+      document.getElementById('club-form').reset();
+      document.getElementById('club-id').value = '';
+      document.getElementById('club-modal').classList.add('active');
+    });
+  }
+
+  const closeClubModal = document.getElementById('close-club-modal');
+  if (closeClubModal) {
+    closeClubModal.addEventListener('click', () => {
+      document.getElementById('club-modal').classList.remove('active');
+    });
+  }
+
+  document.querySelectorAll('.cancel-club-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('club-modal').classList.remove('active');
+    });
+  });
+
+  const clubForm = document.getElementById('club-form');
+  if (clubForm) {
+    clubForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const club = {
+        name: document.getElementById('club-name').value,
+        description: document.getElementById('club-description').value,
+        members: parseInt(document.getElementById('club-members').value)
+      };
+      
+      if (editMode && editId) {
+        const index = clubs.findIndex(c => c.id === editId);
+        clubs[index] = { ...clubs[index], ...club };
+      } else {
+        club.id = clubs.length > 0 ? Math.max(...clubs.map(c => c.id)) + 1 : 1;
+        clubs.push(club);
+      }
+      
+      renderClubs();
+      document.getElementById('club-modal').classList.remove('active');
+    });
+  }
+
+  document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('active');
+      }
+    });
+  });
+
+  renderUsers();
+  renderEvents();
+  renderClubs();
+
+  isAdminInitialized = true;
+  console.log('Admin panel initialized successfully');
 }
+
+window.initAdmin = initAdmin;
+window.editUser = editUser;
+window.deleteUser = deleteUser;
+window.editEvent = editEvent;
+window.deleteEvent = deleteEvent;
+window.editClub = editClub;
+window.deleteClub = deleteClub;

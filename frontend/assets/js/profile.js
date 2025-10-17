@@ -67,15 +67,26 @@ let userEvents = [
   }
 ];
 
+let isProfileInitialized = false;
+
 function renderProfileInfo() {
-  document.getElementById('profile-name').textContent = userProfile.name;
-  document.getElementById('profile-email').textContent = userProfile.email;
-  document.getElementById('profile-id').textContent = `ID: ${userProfile.userId}`;
-  document.getElementById('profile-pic').src = userProfile.avatar;
+  const profileName = document.getElementById('profile-name');
+  const profileEmail = document.getElementById('profile-email');
+  const profileId = document.getElementById('profile-id');
+  const profilePic = document.getElementById('profile-pic');
+  
+  if (profileName) profileName.textContent = userProfile.name;
+  if (profileEmail) profileEmail.textContent = userProfile.email;
+  if (profileId) profileId.textContent = `ID: ${userProfile.userId}`;
+  if (profilePic) profilePic.src = userProfile.avatar;
 }
 
 function renderUserClubs() {
   const grid = document.getElementById('clubs-grid');
+  if (!grid) {
+    console.warn('clubs-grid not found');
+    return;
+  }
   grid.innerHTML = '';
   
   userClubs.forEach(club => {
@@ -104,11 +115,18 @@ function renderUserClubs() {
     grid.appendChild(card);
   });
   
-  document.getElementById('clubs-count').textContent = `${userClubs.length} ${userClubs.length === 1 ? 'club' : 'clubs'}`;
+  const clubsCount = document.getElementById('clubs-count');
+  if (clubsCount) {
+    clubsCount.textContent = `${userClubs.length} ${userClubs.length === 1 ? 'club' : 'clubs'}`;
+  }
 }
 
 function renderUserEvents() {
   const tbody = document.getElementById('events-tbody');
+  if (!tbody) {
+    console.warn('events-tbody not found');
+    return;
+  }
   tbody.innerHTML = '';
   
   userEvents.forEach(event => {
@@ -131,24 +149,40 @@ function renderUserEvents() {
     tbody.appendChild(row);
   });
   
-  document.getElementById('events-count').textContent = `${userEvents.length} ${userEvents.length === 1 ? 'event' : 'events'}`;
+  const eventsCount = document.getElementById('events-count');
+  if (eventsCount) {
+    eventsCount.textContent = `${userEvents.length} ${userEvents.length === 1 ? 'event' : 'events'}`;
+  }
 }
 
-function init() {
+function initProfile() {
+  if (isProfileInitialized) {
+    console.log('Profile already initialized, skipping...');
+    renderProfileInfo();
+    renderUserClubs();
+    renderUserEvents();
+    return;
+  }
 
-  document.getElementById('edit-profile-btn').addEventListener('click', () => {
-    document.getElementById('edit-name').value = userProfile.name;
-    document.getElementById('edit-email').value = userProfile.email;
-    
-    document.getElementById('new-password').value = '';
-    document.getElementById('confirm-password').value = '';
-    
-    document.getElementById('profile-modal').classList.add('active');
-  });
+  console.log('Initializing Profile page...');
 
-  document.getElementById('close-profile-modal').addEventListener('click', () => {
-    document.getElementById('profile-modal').classList.remove('active');
-  });
+  const editProfileBtn = document.getElementById('edit-profile-btn');
+  if (editProfileBtn) {
+    editProfileBtn.addEventListener('click', () => {
+      document.getElementById('edit-name').value = userProfile.name;
+      document.getElementById('edit-email').value = userProfile.email;
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-password').value = '';
+      document.getElementById('profile-modal').classList.add('active');
+    });
+  }
+
+  const closeProfileModal = document.getElementById('close-profile-modal');
+  if (closeProfileModal) {
+    closeProfileModal.addEventListener('click', () => {
+      document.getElementById('profile-modal').classList.remove('active');
+    });
+  }
 
   document.querySelectorAll('.cancel-profile-modal').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -156,37 +190,39 @@ function init() {
     });
   });
 
-  document.getElementById('profile-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const newPassword = document.getElementById('new-password').value;
-    const confirmPassword = document.getElementById('confirm-password').value;
-    
-    if (newPassword || confirmPassword) {
-      if (newPassword !== confirmPassword) {
-        alert('New passwords do not match!');
-        return;
+  const profileForm = document.getElementById('profile-form');
+  if (profileForm) {
+    profileForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      
+      if (newPassword || confirmPassword) {
+        if (newPassword !== confirmPassword) {
+          alert('New passwords do not match!');
+          return;
+        }
+        
+        if (newPassword && newPassword.length < 6) {
+          alert('New password must be at least 6 characters long.');
+          return;
+        }
       }
       
-      if (newPassword && newPassword.length < 6) {
-        alert('New password must be at least 6 characters long.');
-        return;
+      userProfile.name = document.getElementById('edit-name').value;
+      userProfile.email = document.getElementById('edit-email').value;
+      
+      if (newPassword) {
+        alert('Profile and password updated successfully!');
+      } else {
+        alert('Profile updated successfully!');
       }
-    }
-    
-    userProfile.name = document.getElementById('edit-name').value;
-    userProfile.email = document.getElementById('edit-email').value;
-    
-    if (newPassword) {
-      alert('Profile and password updated successfully!');
-    } else {
-      alert('Profile updated successfully!');
-    }
-    
-    renderProfileInfo();
-    
-    document.getElementById('profile-modal').classList.remove('active');
-  });
+      
+      renderProfileInfo();
+      document.getElementById('profile-modal').classList.remove('active');
+    });
+  }
 
   document.querySelectorAll('.modal').forEach(modal => {
     modal.addEventListener('click', (e) => {
@@ -199,10 +235,9 @@ function init() {
   renderProfileInfo();
   renderUserClubs();
   renderUserEvents();
+
+  isProfileInitialized = true;
+  console.log('Profile page initialized successfully');
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
-}
+window.initProfile = initProfile;
