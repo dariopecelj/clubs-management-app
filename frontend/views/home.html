@@ -1,0 +1,65 @@
+<div class="home-container">
+  <div class="hero-section">
+    <h1 class="hero-title">
+      Welcome to <b class="brand-text">CampusConnect</b>
+    </h1>
+    <p class="hero-subtitle">Find and connect with the right people!</p>
+  </div>
+  
+  <div class="action-cards">
+    <div class="action-card events-card">
+      <div class="card-icon">
+        <svg width="180" height="180" viewBox="0 0 120 120" fill="none">
+          <rect x="20" y="25" width="80" height="70" rx="8" stroke="white" stroke-width="5" fill="none"/>
+          <rect x="20" y="25" width="80" height="15" fill="white"/>
+          <line x1="35" y1="15" x2="35" y2="30" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <line x1="85" y1="15" x2="85" y2="30" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <path d="M45 60 L55 70 L75 50" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <button class="action-btn events-btn" id="view-events-btn">View Events</button>
+    </div>
+    
+    <div class="action-card club-card">
+      <div class="card-icon">
+        <svg width="180" height="180" viewBox="0 0 120 120" fill="none">
+          <circle cx="60" cy="45" r="15" fill="white"/>
+          <ellipse cx="60" cy="80" rx="25" ry="18" fill="white"/>
+          <circle cx="35" cy="50" r="12" fill="white"/>
+          <ellipse cx="30" cy="78" rx="18" ry="14" fill="white"/>
+          <circle cx="85" cy="50" r="12" fill="white"/>
+          <ellipse cx="90" cy="78" rx="18" ry="14" fill="white"/>
+        </svg>
+      </div>
+      <button class="action-btn club-btn" id="create-club-btn">Create Club</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Club Modal -->
+<div class="modal" id="create-club-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Create New Club</h3>
+      <button class="close-btn" id="close-club-modal">&times;</button>
+    </div>
+    <form id="create-club-form">
+      <div class="form-group">
+        <label class="form-label">Club Name</label>
+        <input type="text" class="form-input" id="club-name" placeholder="Enter club name" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Club Description</label>
+        <textarea class="form-input form-textarea" id="club-description" placeholder="Enter club description" required></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Club Logo Link</label>
+        <input type="url" class="form-input" id="club-logo-link" placeholder="Enter logo image URL" required>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="submit-btn">Create Club</button>
+        <button type="button" class="cancel-btn cancel-club-modal">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

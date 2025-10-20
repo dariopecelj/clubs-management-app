@@ -1,0 +1,72 @@
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1 class="auth-title">Create Account</h1>
+        <p class="auth-subtitle">Join CampusConnect and start connecting</p>
+      </div>
+
+      <form class="auth-form" id="register-form">
+        <div class="form-group">
+          <label class="form-label" for="fullname">Full Name</label>
+          <input 
+            type="text" 
+            class="form-input auth-input" 
+            id="fullname" 
+            placeholder="John Doe"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <input 
+            type="email" 
+            class="form-input auth-input" 
+            id="email" 
+            placeholder="you@example.com"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input 
+            type="password" 
+            class="form-input auth-input" 
+            id="password" 
+            placeholder="Create a strong password"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirm-password">Confirm Password</label>
+          <input 
+            type="password" 
+            class="form-input auth-input" 
+            id="confirm-password" 
+            placeholder="Re-enter your password"
+            required
+          >
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-label">
+            <input type="checkbox" class="form-checkbox" required>
+            <span>I agree to the <a href="#" class="inline-link">Terms & Conditions</a></span>
+          </label>
+        </div>
+
+        <button type="submit" class="auth-submit-btn">Create Account</button>
+      </form>
+
+      <div class="auth-footer">
+        <p class="auth-switch-text">
+          Already have an account? 
+          <a href="login.html" class="auth-link">Sign in</a>
+        </p>
+      </div>
+
+   
+    </div>
+  </div>
