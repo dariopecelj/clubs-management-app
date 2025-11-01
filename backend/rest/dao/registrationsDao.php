@@ -3,11 +3,8 @@ require_once __DIR__ . "/baseDao.php";
 
 class Registration extends BaseDao {
     
-    protected $table_name;
-    
     public function __construct(){
-        $this->table_name = "registrations";
-        parent::__construct("$this->table_name");
+        parent::__construct("registrations");
     }
     
     public function getAllRegistrations()
@@ -19,7 +16,7 @@ class Registration extends BaseDao {
     public function getRegistrationsByEvent($event_id) {
         $query = "SELECT r.*, u.full_name, u.email 
                   FROM " . $this->table_name . " r
-                  JOIN users u ON r.user_id = u.user_id
+                  JOIN users u ON r.user_id = u.id
                   WHERE r.event_id = :event_id 
                   ORDER BY r.registered_at DESC";
         $params = [':event_id' => $event_id];
@@ -29,7 +26,7 @@ class Registration extends BaseDao {
     public function getRegistrationsByUser($user_id) {
         $query = "SELECT r.*, e.title, e.event_date, e.location, e.image 
                   FROM " . $this->table_name . " r
-                  JOIN events e ON r.event_id = e.event_id
+                  JOIN events e ON r.event_id = e.id
                   WHERE r.user_id = :user_id 
                   ORDER BY e.event_date DESC";
         $params = [':user_id' => $user_id];
@@ -68,15 +65,8 @@ class Registration extends BaseDao {
         }
     }
     
-    public function deleteRegistration($registration_id) {
-        $query = "DELETE FROM " . $this->table_name . " WHERE registration_id = :registration_id";
-        $stmt = $this->connection->prepare($query);
-        $stmt->bindValue(":registration_id", $registration_id);
-        if ($stmt->execute()) {
-            return true;
-        } else {
-            throw new Exception("Failed to delete registration.");
-        }
+    public function deleteRegistration($id) {
+        return $this->delete($id);
     }
     
     public function getRegistrationCount($event_id) {
@@ -89,7 +79,7 @@ class Registration extends BaseDao {
     public function getUpcomingEventsByUser($user_id) {
         $query = "SELECT r.*, e.title, e.event_date, e.location, e.image 
                   FROM " . $this->table_name . " r
-                  JOIN events e ON r.event_id = e.event_id
+                  JOIN events e ON r.event_id = e.id
                   WHERE r.user_id = :user_id AND e.event_date >= CURDATE()
                   ORDER BY e.event_date ASC";
         $params = [':user_id' => $user_id];

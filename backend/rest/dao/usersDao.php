@@ -3,11 +3,8 @@ require_once __DIR__ . "/baseDao.php";
 
 class User extends BaseDao {
     
-    protected $table_name;
-    
     public function __construct(){
-        $this->table_name = "users";
-        parent::__construct("$this->table_name");
+        parent::__construct("users");
     }
     
     public function getAllUsers()
@@ -23,26 +20,15 @@ class User extends BaseDao {
     }
     
     public function updateUser($data, $id) {
-        return $this->update($data, $id, 'user_id');
+        return $this->update($data, $id);
     }
     
     public function deleteUser($id) {
-        $query = "DELETE FROM " . $this->table_name . " WHERE user_id = :id";
-        $stmt = $this->connection->prepare($query);
-        $stmt->bindValue(":id", $id);
-        if ($stmt->execute()) {
-            return true;  
-        } else {
-            throw new Exception("Failed to delete user.");
-        }
+        return $this->delete($id);
     }
     
     public function getUserById($id){
-        $query = "SELECT * FROM ". $this->table_name . " WHERE user_id = :id";
-        $stmt = $this->connection->prepare($query);
-        $stmt->bindValue(":id", $id);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $this->getById($id);
     }
     
     public function getUsersByRole($role) {

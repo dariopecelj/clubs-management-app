@@ -3,11 +3,8 @@ require_once __DIR__ . "/baseDao.php";
 
 class Club extends BaseDao {
     
-    protected $table_name;
-    
     public function __construct(){
-        $this->table_name = "clubs";
-        parent::__construct("$this->table_name");
+        parent::__construct("clubs");
     }
     
     public function getAllClubs()
@@ -16,10 +13,8 @@ class Club extends BaseDao {
         return $this->query($query, []);
     }
     
-    public function getClubById($club_id) {
-        $query = "SELECT * FROM " . $this->table_name . " WHERE club_id = :club_id";
-        $params = [':club_id' => $club_id];
-        return $this->query_unique($query, $params);
+    public function getClubById($id) {
+        return $this->getById($id);
     }
     
     public function getClubsByCreator($creator_user_id) {
@@ -28,19 +23,12 @@ class Club extends BaseDao {
         return $this->query($query, $params);
     }
     
-    public function updateClub($data, $club_id) {
-        return $this->update($data, $club_id, 'club_id');
+    public function updateClub($data, $id) {
+        return $this->update($data, $id);
     }
     
-    public function deleteClub($club_id) {
-        $query = "DELETE FROM " . $this->table_name . " WHERE club_id = :club_id";
-        $stmt = $this->connection->prepare($query);
-        $stmt->bindValue(":club_id", $club_id);
-        if ($stmt->execute()) {
-            return true;
-        } else {
-            throw new Exception("Failed to delete club.");
-        }
+    public function deleteClub($id) {
+        return $this->delete($id);
     }
     
     public function searchClubs($search_term) {

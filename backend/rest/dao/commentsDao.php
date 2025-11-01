@@ -3,11 +3,8 @@ require_once __DIR__ . "/baseDao.php";
 
 class Comment extends BaseDao {
     
-    protected $table_name;
-    
     public function __construct(){
-        $this->table_name = "comments";
-        parent::__construct("$this->table_name");
+        parent::__construct("comments");
     }
     
     public function getAllComments()
@@ -19,7 +16,7 @@ class Comment extends BaseDao {
     public function getCommentsByEvent($event_id) {
         $query = "SELECT c.*, u.full_name, u.email 
                   FROM " . $this->table_name . " c
-                  JOIN users u ON c.user_id = u.user_id
+                  JOIN users u ON c.user_id = u.id
                   WHERE c.event_id = :event_id 
                   ORDER BY c.created_at DESC";
         $params = [':event_id' => $event_id];
@@ -29,26 +26,19 @@ class Comment extends BaseDao {
     public function getCommentsByUser($user_id) {
         $query = "SELECT c.*, e.title as event_title 
                   FROM " . $this->table_name . " c
-                  JOIN events e ON c.event_id = e.event_id
+                  JOIN events e ON c.event_id = e.id
                   WHERE c.user_id = :user_id 
                   ORDER BY c.created_at DESC";
         $params = [':user_id' => $user_id];
         return $this->query($query, $params);
     }
     
-    public function updateComment($data, $comment_id) {
-        return $this->update($data, $comment_id, 'comment_id');
+    public function updateComment($data, $id) {
+        return $this->update($data, $id);
     }
     
-    public function deleteComment($comment_id) {
-        $query = "DELETE FROM " . $this->table_name . " WHERE comment_id = :comment_id";
-        $stmt = $this->connection->prepare($query);
-        $stmt->bindValue(":comment_id", $comment_id);
-        if ($stmt->execute()) {
-            return true;
-        } else {
-            throw new Exception("Failed to delete comment.");
-        }
+    public function deleteComment($id) {
+        return $this->delete($id);
     }
     
     public function getCommentCount($event_id) {
