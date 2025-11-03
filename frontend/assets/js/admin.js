@@ -18,7 +18,7 @@ let clubs = [
 
 let editMode = false;
 let editId = null;
-let isAdminInitialized = false;
+let isAdminInitialized = false; 
 
 function renderUsers() {
   const tbody = document.getElementById('users-tbody');
