@@ -36,7 +36,6 @@
   </div>
 </div>
 
-<!-- Create Club Modal -->
 <div class="modal" id="create-club-modal">
   <div class="modal-content">
     <div class="modal-header">
@@ -46,15 +45,35 @@
     <form id="create-club-form">
       <div class="form-group">
         <label class="form-label">Club Name</label>
-        <input type="text" class="form-input" id="club-name" placeholder="Enter club name" required>
+        <input 
+          type="text" 
+          class="form-input" 
+          id="club-name" 
+          name="name"
+          placeholder="Enter club name" 
+          required
+        >
       </div>
       <div class="form-group">
         <label class="form-label">Club Description</label>
-        <textarea class="form-input form-textarea" id="club-description" placeholder="Enter club description" required></textarea>
+        <textarea 
+          class="form-input form-textarea" 
+          id="club-description" 
+          name="description"
+          placeholder="Enter club description" 
+          required
+        ></textarea>
       </div>
       <div class="form-group">
         <label class="form-label">Club Logo Link</label>
-        <input type="url" class="form-input" id="club-logo-link" placeholder="Enter logo image URL" required>
+        <input 
+          type="url" 
+          class="form-input" 
+          id="club-logo-link" 
+          name="logo"
+          placeholder="Enter logo image URL" 
+          required
+        >
       </div>
       <div class="form-actions">
         <button type="submit" class="submit-btn">Create Club</button>

@@ -1,6 +1,4 @@
 $(document).ready(function () {
-    console.log("Initializing SPApp...");
-
     const app = $.spapp({
         defaultView: "home"
     });
@@ -31,24 +29,18 @@ $(document).ready(function () {
             if (!section) {
                 if (attempts < 20) {
                     setTimeout(() => attemptCall(attempts + 1), 100);
-                } else {
-                    console.warn(`Section #${viewId} not found after waiting`);
                 }
                 return;
             }
 
             if (typeof window[fnName] === 'function') {
-                console.log(`Calling ${fnName} for view: ${viewId}`);
                 try {
                     window[fnName]();
                 } catch (error) {
-                    console.error(`Error calling ${fnName}:`, error);
                 }
             } else {
                 if (attempts < 20) {
                     setTimeout(() => attemptCall(attempts + 1), 100);
-                } else {
-                    console.warn(`Function ${fnName} not defined for view: ${viewId} after waiting`);
                 }
             }
         }
@@ -60,34 +52,75 @@ $(document).ready(function () {
         const scriptPath = `assets/js/${viewId}.js`;
 
         if (loadedScripts.has(scriptPath)) {
-            console.log(`Script already loaded: ${scriptPath}`);
             callViewFunction(viewId);
             return;
         }
 
         const existingScript = document.querySelector(`script[src="${scriptPath}"]`);
         if (existingScript) {
-            console.log(`Script element exists: ${scriptPath}`);
             loadedScripts.add(scriptPath);
             callViewFunction(viewId);
             return;
         }
 
-        console.log(`Loading script: ${scriptPath}`);
         const script = document.createElement("script");
         script.src = scriptPath;
 
         script.onload = () => {
-            console.log(`Script loaded successfully: ${scriptPath}`);
             loadedScripts.add(scriptPath);
             callViewFunction(viewId); 
         };
 
         script.onerror = () => {
-            console.error(`Failed to load script: ${scriptPath}`);
         };
 
         document.body.appendChild(script);
+    }
+
+    function checkAuth(viewId) {
+        const token = localStorage.getItem("user_token");
+        const publicPages = ["login", "register"];
+        
+        if (!token && !publicPages.includes(viewId)) {
+            toastr.warning("Please login to access this page");
+            window.location.hash = "#login";
+            return false;
+        }
+        
+        if (token && publicPages.includes(viewId)) {
+            window.location.hash = "#home";
+            return false;
+        }
+        
+        if (token) {
+            try {
+                const userData = Utils.parseJwt(token);
+                const userRole = userData?.user?.role;
+                
+                if (viewId === "admin") {
+                    if (userRole !== Constants.ADMIN_ROLE) {
+                        toastr.error("Access denied: Admin only");
+                        window.location.hash = "#home";
+                        return false;
+                    }
+                }
+                
+                if (viewId === "club") {
+                    if (userRole !== Constants.ADMIN_ROLE && userRole !== Constants.CLUB_OWNER) {
+                        toastr.error("Access denied: You need to create a club first");
+                        window.location.hash = "#home";
+                        return false;
+                    }
+                }
+                
+            } catch (error) {
+                localStorage.clear();
+                window.location.hash = "#login";
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     const pages = ["home", "events", "event-details", "club", "admin", "profile", "login", "register"];
@@ -97,12 +130,26 @@ $(document).ready(function () {
             view: viewId,
             load: "../views/" + viewId + ".html",
             onReady: () => {
-                console.log(`View ready: ${viewId}`);
+                if (!checkAuth(viewId)) {
+                    return;
+                }
 
-       
                 const checkSection = () => {
                     if (document.getElementById(viewId)) {
                         showSection(viewId);
+                        
+                        const token = localStorage.getItem("user_token");
+                        
+                        if (token && viewId !== "login" && viewId !== "register") {
+                            UserService.generateMenuItems();
+                        } else {
+                            UserService.updateAuthButton();
+                        }
+                        
+                        if (viewId !== "admin" && window.cleanupAdmin) {
+                            window.cleanupAdmin();
+                        }
+                        
                         loadPageScript(viewId); 
                     } else {
                         setTimeout(checkSection, 50);
@@ -114,10 +161,19 @@ $(document).ready(function () {
     });
 
     app.run();
-    console.log("SPApp is running");
 
-    const currentHash = window.location.hash.replace('#', '');
-    if (currentHash && pages.includes(currentHash)) {
+    const token = localStorage.getItem("user_token");
+    const currentHash = window.location.hash.replace('#', '') || 'home';
+    
+    setTimeout(() => {
+        UserService.updateAuthButton();
+    }, 100);
+    
+    if (!token && currentHash !== 'login' && currentHash !== 'register') {
+        window.location.hash = '#login';
+    } else if (token && (currentHash === 'login' || currentHash === 'register')) {
+        window.location.hash = '#home';
+    } else if (pages.includes(currentHash)) {
         setTimeout(() => {
             window.location.hash = currentHash;
         }, 100);

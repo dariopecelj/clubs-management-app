@@ -24,5 +24,6 @@ class Config {
     public static function JWT_SECRET() {
         return 'dario2000';
     }
+
 }
 ?>

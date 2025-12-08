@@ -1,349 +1,492 @@
-let users = [
-  { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin', status: 'Active' },
-  { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Student', status: 'Active' },
-  { id: 3, name: 'Mike Johnson', email: 'mike@example.com', role: 'Club Leader', status: 'Inactive' }
-];
+toastr.options.preventDuplicates = true;
+toastr.options.timeOut = 3000;
 
-let events = [
-  { id: 1, name: 'Tech Night', club: 'Tech Innovation Club', date: '2025-10-22', status: 'Upcoming' },
-  { id: 2, name: 'Business Workshop', club: 'Business Society', date: '2025-11-05', status: 'Upcoming' },
-  { id: 3, name: 'Art Exhibition', club: 'Arts Club', date: '2025-09-15', status: 'Completed' }
-];
+(function() {
+    window.adminUsers = window.adminUsers || [];
+    window.adminEvents = window.adminEvents || [];
+    window.adminClubs = window.adminClubs || [];
+    window.adminEditMode = window.adminEditMode || false;
+    window.adminEditId = window.adminEditId || null;
+    window.adminInitialized = window.adminInitialized || false;
 
-let clubs = [
-  { id: 1, name: 'Tech Innovation Club', description: 'Explore latest technologies', members: 45 },
-  { id: 2, name: 'Business Society', description: 'Business networking and skills', members: 32 },
-  { id: 3, name: 'Arts Club', description: 'Creative arts and expression', members: 28 }
-];
+    let users = window.adminUsers;
+    let events = window.adminEvents;
+    let clubs = window.adminClubs;
+    let editMode = window.adminEditMode;
+    let editId = window.adminEditId;
 
-let editMode = false;
-let editId = null;
-let isAdminInitialized = false; 
+    function renderUsers() {
+        const tbody = document.getElementById('users-tbody');
+        if (!tbody) {
+            return;
+        }
+        tbody.innerHTML = '';
+        
+        if (users.length === 0) {
+            tbody.innerHTML = '<div class="data-row"><div style="grid-column: 1/-1; text-align: center;">No users found</div></div>';
+            return;
+        }
+        
+        users.forEach(user => {
+            const row = document.createElement('div');
+            row.className = 'data-row';
+            row.innerHTML = `
+                <div>${user.id}</div>
+                <div>${user.full_name || user.name || 'N/A'}</div>
+                <div>${user.email}</div>
+                <div>${user.role}</div>
+                <div class="action-btns">
+                    <button class="edit-btn" onclick="editUser(${user.id})">Edit</button>
+                    <button class="delete-btn" onclick="deleteUser(${user.id})">Delete</button>
+                </div>
+            `;
+            tbody.appendChild(row);
+        });
+    }
 
-function renderUsers() {
-  const tbody = document.getElementById('users-tbody');
-  if (!tbody) {
-    console.warn('users-tbody not found');
-    return;
-  }
-  tbody.innerHTML = '';
-  
-  users.forEach(user => {
-    const row = document.createElement('div');
-    row.className = 'data-row';
-    row.innerHTML = `
-      <div>${user.name}</div>
-      <div>${user.email}</div>
-      <div>${user.role}</div>
-      <div><span class="status-badge ${user.status.toLowerCase()}">${user.status}</span></div>
-      <div class="action-btns">
-        <button class="edit-btn" onclick="editUser(${user.id})">Edit</button>
-        <button class="delete-btn" onclick="deleteUser(${user.id})">Delete</button>
-      </div>
-    `;
-    tbody.appendChild(row);
-  });
-}
+    function renderEvents() {
+        const tbody = document.getElementById('events-tbody');
+        if (!tbody) {
+            return;
+        }
+        tbody.innerHTML = '';
+        
+        if (events.length === 0) {
+            tbody.innerHTML = '<div class="data-row"><div style="grid-column: 1/-1; text-align: center;">No events found</div></div>';
+            return;
+        }
+        
+        events.forEach(event => {
+            const club = clubs.find(c => c.id === event.club_id);
+            const clubName = club ? club.club_name : 'N/A';
+            
+            const row = document.createElement('div');
+            row.className = 'data-row';
+            row.innerHTML = `
+                <div>${event.id}</div>
+                <div>${event.title}</div>
+                <div>${clubName}</div>
+                <div>${event.event_date}</div>
+                <div class="action-btns">
+                    <button class="edit-btn" onclick="editEvent(${event.id})">Edit</button>
+                    <button class="delete-btn" onclick="deleteEvent(${event.id})">Delete</button>
+                </div>
+            `;
+            tbody.appendChild(row);
+        });
+    }
 
-function renderEvents() {
-  const tbody = document.getElementById('events-tbody');
-  if (!tbody) {
-    console.warn('events-tbody not found');
-    return;
-  }
-  tbody.innerHTML = '';
-  
-  events.forEach(event => {
-    const row = document.createElement('div');
-    row.className = 'data-row';
-    row.innerHTML = `
-      <div>${event.name}</div>
-      <div>${event.club}</div>
-      <div>${event.date}</div>
-      <div><span class="status-badge ${event.status.toLowerCase()}">${event.status}</span></div>
-      <div class="action-btns">
-        <button class="edit-btn" onclick="editEvent(${event.id})">Edit</button>
-        <button class="delete-btn" onclick="deleteEvent(${event.id})">Delete</button>
-      </div>
-    `;
-    tbody.appendChild(row);
-  });
-}
+    function renderClubs() {
+        const tbody = document.getElementById('clubs-tbody');
+        if (!tbody) {
+            return;
+        }
+        tbody.innerHTML = '';
+        
+        if (clubs.length === 0) {
+            tbody.innerHTML = '<div class="data-row"><div style="grid-column: 1/-1; text-align: center;">No clubs found</div></div>';
+            return;
+        }
+        
+        clubs.forEach(club => {
+            const row = document.createElement('div');
+            row.className = 'data-row';
+            row.innerHTML = `
+                <div>${club.id}</div>
+                <div>${club.club_name}</div>
+                <div>${club.description || 'N/A'}</div>
+                <div class="action-btns">
+                    <button class="edit-btn" onclick="editClub(${club.id})">Edit</button>
+                    <button class="delete-btn" onclick="deleteClub(${club.id})">Delete</button>
+                </div>
+            `;
+            tbody.appendChild(row);
+        });
+    }
 
-function renderClubs() {
-  const tbody = document.getElementById('clubs-tbody');
-  if (!tbody) {
-    console.warn('clubs-tbody not found');
-    return;
-  }
-  tbody.innerHTML = '';
-  
-  clubs.forEach(club => {
-    const row = document.createElement('div');
-    row.className = 'data-row';
-    row.innerHTML = `
-      <div>${club.name}</div>
-      <div>${club.description}</div>
-      <div>${club.members}</div>
-      <div class="action-btns">
-        <button class="edit-btn" onclick="editClub(${club.id})">Edit</button>
-        <button class="delete-btn" onclick="deleteClub(${club.id})">Delete</button>
-      </div>
-    `;
-    tbody.appendChild(row);
-  });
-}
+    function loadUsers() {
+        UserService.getAllUsers(function(response) {
+            users = window.adminUsers = response || [];
+            renderUsers();
+        }, function(error) {
+            toastr.error('Failed to load users');
+            users = window.adminUsers = [];
+            renderUsers();
+        });
+    }
 
-function editUser(id) {
-  editMode = true;
-  editId = id;
-  const user = users.find(u => u.id === id);
-  
-  document.getElementById('user-modal-title').textContent = 'Edit User';
-  document.getElementById('user-id').value = user.id;
-  document.getElementById('user-name').value = user.name;
-  document.getElementById('user-email').value = user.email;
-  document.getElementById('user-role').value = user.role;
-  document.getElementById('user-status').value = user.status;
-  document.getElementById('user-modal').classList.add('active');
-}
+    function loadEvents() {
+        EventsService.getAllEvents(function(response) {
+            events = window.adminEvents = response || [];
+            renderEvents();
+        }, function(error) {
+            toastr.error('Failed to load events');
+            events = window.adminEvents = [];
+            renderEvents();
+        });
+    }
 
-function deleteUser(id) {
-  if (confirm('Are you sure you want to delete this user?')) {
-    users = users.filter(u => u.id !== id);
-    renderUsers();
-  }
-}
+    function loadClubs() {
+        ClubsService.getAllClubs(null, function(response) {
+            clubs = window.adminClubs = response || [];
+            renderClubs();
+            if (events.length > 0) {
+                renderEvents();
+            }
+        }, function(error) {
+            toastr.error('Failed to load clubs');
+            clubs = window.adminClubs = [];
+            renderClubs();
+        });
+    }
 
-function editEvent(id) {
-  editMode = true;
-  editId = id;
-  const event = events.find(e => e.id === id);
-  
-  document.getElementById('event-modal-title').textContent = 'Edit Event';
-  document.getElementById('event-id').value = event.id;
-  document.getElementById('event-name').value = event.name;
-  document.getElementById('event-club').value = event.club;
-  document.getElementById('event-date').value = event.date;
-  document.getElementById('event-status').value = event.status;
-  document.getElementById('event-modal').classList.add('active');
-}
+    window.editUser = function(id) {
+        editMode = window.adminEditMode = true;
+        editId = window.adminEditId = id;
+        const user = users.find(u => u.id === id);
+        
+        document.getElementById('admin-user-modal-title').textContent = 'Edit User';
+        document.getElementById('admin-user-id').value = user.id;
+        document.getElementById('admin-user-name').value = user.full_name || user.name || '';
+        document.getElementById('admin-user-email').value = user.email;
+        document.getElementById('admin-user-role').value = user.role;
+        document.getElementById('admin-user-password').value = '';
+        document.getElementById('admin-user-modal').classList.add('active');
+    };
 
-function deleteEvent(id) {
-  if (confirm('Are you sure you want to delete this event?')) {
-    events = events.filter(e => e.id !== id);
-    renderEvents();
-  }
-}
+    window.deleteUser = function(id) {
+        const user = users.find(u => u.id === id);
+        
+        document.getElementById('admin-delete-modal-title').textContent = 'Delete User';
+        document.getElementById('admin-delete-modal-message').textContent = `Are you sure you want to delete "${user.full_name || user.email}"?`;
+        document.getElementById('admin-delete-modal').classList.add('active');
+        
+        window.pendingDeleteAction = function() {
+            document.getElementById('admin-delete-modal').classList.remove('active');
+            
+            UserService.deleteUser(id, function(response) {
+                loadUsers();
+            }, function(error) {
+                toastr.error('Failed to delete user');
+            });
+        };
+    };
 
-function editClub(id) {
-  editMode = true;
-  editId = id;
-  const club = clubs.find(c => c.id === id);
-  
-  document.getElementById('club-modal-title').textContent = 'Edit Club';
-  document.getElementById('club-id').value = club.id;
-  document.getElementById('club-name').value = club.name;
-  document.getElementById('club-description').value = club.description;
-  document.getElementById('club-members').value = club.members;
-  document.getElementById('club-modal').classList.add('active');
-}
+    window.editEvent = function(id) {
+        editMode = window.adminEditMode = true;
+        editId = window.adminEditId = id;
+        const event = events.find(e => e.id === id);
+        
+        document.getElementById('admin-event-modal-title').textContent = 'Edit Event';
+        document.getElementById('admin-event-id').value = event.id;
+        document.getElementById('admin-event-name').value = event.title;
+        document.getElementById('admin-event-club').value = event.club_id || '';
+        document.getElementById('admin-event-date').value = event.event_date;
+        document.getElementById('admin-event-modal').classList.add('active');
+        
+        loadClubsForDropdown();
+    };
 
-function deleteClub(id) {
-  if (confirm('Are you sure you want to delete this club?')) {
-    clubs = clubs.filter(c => c.id !== id);
-    renderClubs();
-  }
-}
+    window.deleteEvent = function(id) {
+        const event = events.find(e => e.id === id);
+        
+        document.getElementById('admin-delete-modal-title').textContent = 'Delete Event';
+        document.getElementById('admin-delete-modal-message').textContent = `Are you sure you want to delete "${event.title}"?`;
+        document.getElementById('admin-delete-modal').classList.add('active');
+        
+        window.pendingDeleteAction = function() {
+            document.getElementById('admin-delete-modal').classList.remove('active');
+            
+            EventsService.deleteEvent(id, function(response) {
+                loadEvents();
+            }, function(error) {
+                toastr.error('Failed to delete event');
+            });
+        };
+    };
 
-function initAdmin() {
+    window.editClub = function(id) {
+        editMode = window.adminEditMode = true;
+        editId = window.adminEditId = id;
+        const club = clubs.find(c => c.id === id);
+        
+        document.getElementById('admin-club-modal-title').textContent = 'Edit Club';
+        document.getElementById('admin-club-id').value = club.id;
+        document.getElementById('admin-club-name').value = club.club_name;
+        document.getElementById('admin-club-description').value = club.description || '';
+        document.getElementById('admin-club-user-id').value = club.creator_user_id || club.user_id || '';
+        document.getElementById('admin-club-modal').classList.add('active');
+    };
 
-  if (isAdminInitialized) {
-    console.log('Admin already initialized, skipping...');
-    renderUsers();
-    renderEvents();
-    renderClubs();
-    return;
-  }
+    window.deleteClub = function(id) {
+        const club = clubs.find(c => c.id === id);
+        
+        document.getElementById('admin-delete-modal-title').textContent = 'Delete Club';
+        document.getElementById('admin-delete-modal-message').textContent = `Are you sure you want to delete "${club.club_name}"?`;
+        document.getElementById('admin-delete-modal').classList.add('active');
+        
+        window.pendingDeleteAction = function() {
+            document.getElementById('admin-delete-modal').classList.remove('active');
+            
+            ClubsService.deleteClub(id, function(response) {
+                loadClubs();
+            }, function(error) {
+                toastr.error('Failed to delete club');
+            });
+        };
+    };
 
-  console.log('Initializing Admin panel...');
+    function loadClubsForDropdown() {
+        const clubSelect = document.getElementById('admin-event-club');
+        if (!clubSelect) return;
+        
+        ClubsService.getAllClubs(null, function(response) {
+            clubSelect.innerHTML = '';
+            response.forEach(club => {
+                const option = document.createElement('option');
+                option.value = club.id;
+                option.textContent = club.club_name;
+                clubSelect.appendChild(option);
+            });
+        });
+    }
 
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const tabName = this.getAttribute('data-tab');
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      this.classList.add('active');
-      document.getElementById(tabName + '-tab').classList.add('active');
-    });
-  });
+    function initAdmin() {
+        if (window.adminInitialized) {
+            return;
+        }
+        window.adminInitialized = true;
 
-  const addUserBtn = document.getElementById('add-user-btn');
-  if (addUserBtn) {
-    addUserBtn.addEventListener('click', () => {
-      editMode = false;
-      editId = null;
-      document.getElementById('user-modal-title').textContent = 'Add User';
-      document.getElementById('user-form').reset();
-      document.getElementById('user-id').value = '';
-      document.getElementById('user-modal').classList.add('active');
-    });
-  }
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(tabName + '-tab').classList.add('active');
+                
+                if (tabName === 'users') {
+                    loadUsers();
+                } else if (tabName === 'events') {
+                    if (clubs.length === 0) {
+                        loadClubs();
+                    }
+                    loadEvents();
+                } else if (tabName === 'clubs') {
+                    loadClubs();
+                }
+            });
+        });
 
-  const closeUserModal = document.getElementById('close-user-modal');
-  if (closeUserModal) {
-    closeUserModal.addEventListener('click', () => {
-      document.getElementById('user-modal').classList.remove('active');
-    });
-  }
+        document.getElementById('add-user-btn').addEventListener('click', () => {
+            editMode = window.adminEditMode = false;
+            editId = window.adminEditId = null;
+            document.getElementById('admin-user-modal-title').textContent = 'Add User';
+            document.getElementById('admin-user-form').reset();
+            document.getElementById('admin-user-id').value = '';
+            document.getElementById('admin-user-modal').classList.add('active');
+        });
 
-  document.querySelectorAll('.cancel-user-modal').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('user-modal').classList.remove('active');
-    });
-  });
+        document.getElementById('admin-close-user-modal').addEventListener('click', () => {
+            document.getElementById('admin-user-modal').classList.remove('active');
+        });
 
-  const userForm = document.getElementById('user-form');
-  if (userForm) {
-    userForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const user = {
-        name: document.getElementById('user-name').value,
-        email: document.getElementById('user-email').value,
-        role: document.getElementById('user-role').value,
-        status: document.getElementById('user-status').value
-      };
-      
-      if (editMode && editId) {
-        const index = users.findIndex(u => u.id === editId);
-        users[index] = { ...users[index], ...user };
-      } else {
-        user.id = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
-        users.push(user);
-      }
-      
-      renderUsers();
-      document.getElementById('user-modal').classList.remove('active');
-    });
-  }
+        document.querySelectorAll('.cancel-admin-user-modal').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('admin-user-modal').classList.remove('active');
+            });
+        });
 
-  const addEventBtn = document.getElementById('add-event-btn');
-  if (addEventBtn) {
-    addEventBtn.addEventListener('click', () => {
-      editMode = false;
-      editId = null;
-      document.getElementById('event-modal-title').textContent = 'Add Event';
-      document.getElementById('event-form').reset();
-      document.getElementById('event-id').value = '';
-      document.getElementById('event-modal').classList.add('active');
-    });
-  }
+        document.getElementById('admin-user-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('.submit-btn');
+            if (submitBtn.disabled) return;
+            
+            const userData = {
+                full_name: document.getElementById('admin-user-name').value,
+                email: document.getElementById('admin-user-email').value,
+                role: document.getElementById('admin-user-role').value
+            };
+            
+            const password = document.getElementById('admin-user-password').value;
+            if (password && password.trim() !== '') {
+                userData.password = password;
+            }
+            
+            if (editMode && editId) {
+                submitBtn.disabled = true;
+                UserService.updateUser(editId, userData, function(response) {
+                    submitBtn.disabled = false;
+                    document.getElementById('admin-user-modal').classList.remove('active');
+                    loadUsers();
+                }, function(error) {
+                    submitBtn.disabled = false;
+                    toastr.error('Failed to update user');
+                });
+            } else {
+                if (!password || password.trim() === '') {
+                    toastr.error('Password is required for new users');
+                    return;
+                }
+                
+                submitBtn.disabled = true;
+                UserService.createUser(userData, function(response) {
+                    submitBtn.disabled = false;
+                    document.getElementById('admin-user-modal').classList.remove('active');
+                    loadUsers();
+                }, function(error) {
+                    submitBtn.disabled = false;
+                    toastr.error('Failed to create user');
+                });
+            }
+        });
 
-  const closeEventModal = document.getElementById('close-event-modal');
-  if (closeEventModal) {
-    closeEventModal.addEventListener('click', () => {
-      document.getElementById('event-modal').classList.remove('active');
-    });
-  }
+        document.getElementById('add-event-btn').addEventListener('click', () => {
+            editMode = window.adminEditMode = false;
+            editId = window.adminEditId = null;
+            document.getElementById('admin-event-modal-title').textContent = 'Add Event';
+            document.getElementById('admin-event-form').reset();
+            document.getElementById('admin-event-id').value = '';
+            document.getElementById('admin-event-modal').classList.add('active');
+            loadClubsForDropdown();
+        });
 
-  document.querySelectorAll('.cancel-event-modal').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('event-modal').classList.remove('active');
-    });
-  });
+        document.getElementById('admin-close-event-modal').addEventListener('click', () => {
+            document.getElementById('admin-event-modal').classList.remove('active');
+        });
 
-  const eventForm = document.getElementById('event-form');
-  if (eventForm) {
-    eventForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const event = {
-        name: document.getElementById('event-name').value,
-        club: document.getElementById('event-club').value,
-        date: document.getElementById('event-date').value,
-        status: document.getElementById('event-status').value
-      };
-      
-      if (editMode && editId) {
-        const index = events.findIndex(ev => ev.id === editId);
-        events[index] = { ...events[index], ...event };
-      } else {
-        event.id = events.length > 0 ? Math.max(...events.map(e => e.id)) + 1 : 1;
-        events.push(event);
-      }
-      
-      renderEvents();
-      document.getElementById('event-modal').classList.remove('active');
-    });
-  }
+        document.querySelectorAll('.cancel-admin-event-modal').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('admin-event-modal').classList.remove('active');
+            });
+        });
 
-  const addClubBtn = document.getElementById('add-club-btn');
-  if (addClubBtn) {
-    addClubBtn.addEventListener('click', () => {
-      editMode = false;
-      editId = null;
-      document.getElementById('club-modal-title').textContent = 'Add Club';
-      document.getElementById('club-form').reset();
-      document.getElementById('club-id').value = '';
-      document.getElementById('club-modal').classList.add('active');
-    });
-  }
+        document.getElementById('admin-event-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('.submit-btn');
+            if (submitBtn.disabled) return;
+            
+            const eventData = {
+                title: document.getElementById('admin-event-name').value,
+                club_id: parseInt(document.getElementById('admin-event-club').value),
+                event_date: document.getElementById('admin-event-date').value,
+                description: 'Event description'
+            };
+            
+            if (editMode && editId) {
+                submitBtn.disabled = true;
+                EventsService.updateEvent(editId, eventData, function(response) {
+                    submitBtn.disabled = false;
+                    document.getElementById('admin-event-modal').classList.remove('active');
+                    loadEvents();
+                }, function(error) {
+                    submitBtn.disabled = false;
+                    toastr.error('Failed to update event');
+                });
+            } else {
+                submitBtn.disabled = true;
+                EventsService.createEvent(eventData, function(response) {
+                    submitBtn.disabled = false;
+                    document.getElementById('admin-event-modal').classList.remove('active');
+                    loadEvents();
+                }, function(error) {
+                    submitBtn.disabled = false;
+                    toastr.error('Failed to create event');
+                });
+            }
+        });
 
-  const closeClubModal = document.getElementById('close-club-modal');
-  if (closeClubModal) {
-    closeClubModal.addEventListener('click', () => {
-      document.getElementById('club-modal').classList.remove('active');
-    });
-  }
+        document.getElementById('add-club-btn').addEventListener('click', () => {
+            editMode = window.adminEditMode = false;
+            editId = window.adminEditId = null;
+            document.getElementById('admin-club-modal-title').textContent = 'Add Club';
+            document.getElementById('admin-club-form').reset();
+            document.getElementById('admin-club-id').value = '';
+            document.getElementById('admin-club-modal').classList.add('active');
+        });
 
-  document.querySelectorAll('.cancel-club-modal').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.getElementById('club-modal').classList.remove('active');
-    });
-  });
+        document.getElementById('admin-close-club-modal').addEventListener('click', () => {
+            document.getElementById('admin-club-modal').classList.remove('active');
+        });
 
-  const clubForm = document.getElementById('club-form');
-  if (clubForm) {
-    clubForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const club = {
-        name: document.getElementById('club-name').value,
-        description: document.getElementById('club-description').value,
-        members: parseInt(document.getElementById('club-members').value)
-      };
-      
-      if (editMode && editId) {
-        const index = clubs.findIndex(c => c.id === editId);
-        clubs[index] = { ...clubs[index], ...club };
-      } else {
-        club.id = clubs.length > 0 ? Math.max(...clubs.map(c => c.id)) + 1 : 1;
-        clubs.push(club);
-      }
-      
-      renderClubs();
-      document.getElementById('club-modal').classList.remove('active');
-    });
-  }
+        document.querySelectorAll('.cancel-admin-club-modal').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('admin-club-modal').classList.remove('active');
+            });
+        });
 
-  document.querySelectorAll('.modal').forEach(modal => {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.classList.remove('active');
-      }
-    });
-  });
+        document.getElementById('admin-club-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('.submit-btn');
+            if (submitBtn.disabled) return;
+            submitBtn.disabled = true;
+            
+            const clubData = {
+                club_name: document.getElementById('admin-club-name').value,
+                description: document.getElementById('admin-club-description').value,
+                creator_user_id: parseInt(document.getElementById('admin-club-user-id').value)
+            };
+            
+            if (editMode && editId) {
+                ClubsService.updateClub(editId, clubData, function(response) {
+                    submitBtn.disabled = false;
+                    document.getElementById('admin-club-modal').classList.remove('active');
+                    loadClubs();
+                }, function(error) {
+                    submitBtn.disabled = false;
+                    toastr.error('Failed to update club');
+                });
+            } else {
+                ClubsService.createClub(clubData, function(response) {
+                    submitBtn.disabled = false;
+                    document.getElementById('admin-club-modal').classList.remove('active');
+                    loadClubs();
+                }, function(error) {
+                    submitBtn.disabled = false;
+                    toastr.error('Failed to create club');
+                });
+            }
+        });
 
-  renderUsers();
-  renderEvents();
-  renderClubs();
+        document.getElementById('admin-close-delete-modal').addEventListener('click', () => {
+            document.getElementById('admin-delete-modal').classList.remove('active');
+        });
 
-  isAdminInitialized = true;
-  console.log('Admin panel initialized successfully');
-}
+        document.getElementById('admin-cancel-delete-btn').addEventListener('click', () => {
+            document.getElementById('admin-delete-modal').classList.remove('active');
+        });
 
-window.initAdmin = initAdmin;
-window.editUser = editUser;
-window.deleteUser = deleteUser;
-window.editEvent = editEvent;
-window.deleteEvent = deleteEvent;
-window.editClub = editClub;
-window.deleteClub = deleteClub;
+        document.getElementById('admin-confirm-delete-btn').addEventListener('click', () => {
+            if (window.pendingDeleteAction) {
+                window.pendingDeleteAction();
+                window.pendingDeleteAction = null;
+            }
+        });
+
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        loadUsers();
+    }
+
+    window.initAdmin = initAdmin;
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('users-tab')) {
+                initAdmin();
+            }
+        });
+    } else if (document.getElementById('users-tab')) {
+        initAdmin();
+    }
+
+})();

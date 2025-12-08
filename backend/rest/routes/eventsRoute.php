@@ -18,6 +18,7 @@
  *   path="/events",
  *   summary="Get all events or filter by club/search",
  *   tags={"Events"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="club_id",
  *     in="query",
@@ -36,6 +37,7 @@
  * )
  */
 Flight::route('GET /events', function(){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     $club_id = Flight::request()->query['club_id'] ?? null;
     $search = Flight::request()->query['search'] ?? null;
     
@@ -53,6 +55,7 @@ Flight::route('GET /events', function(){
  *   path="/events/{id}",
  *   summary="Get event by ID",
  *   tags={"Events"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="id",
  *     in="path",
@@ -64,6 +67,7 @@ Flight::route('GET /events', function(){
  * )
  */
 Flight::route('GET /events/@id', function($id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     Flight::json(Flight::eventsService()->getById($id));
 });
 
@@ -72,6 +76,7 @@ Flight::route('GET /events/@id', function($id){
  *   path="/events/{id}/with-club",
  *   summary="Get event by ID with club information",
  *   tags={"Events"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="id",
  *     in="path",
@@ -83,6 +88,7 @@ Flight::route('GET /events/@id', function($id){
  * )
  */
 Flight::route('GET /events/@id/with-club', function($id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     Flight::json(Flight::eventsService()->getEventWithClubInfo($id));
 });
 
@@ -91,10 +97,12 @@ Flight::route('GET /events/@id/with-club', function($id){
  *   path="/events/upcoming",
  *   summary="Get upcoming events",
  *   tags={"Events"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Response(response=200, description="List of upcoming events")
  * )
  */
 Flight::route('GET /events/upcoming', function(){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     Flight::json(Flight::eventsService()->getUpcomingEvents());
 });
 
@@ -103,10 +111,12 @@ Flight::route('GET /events/upcoming', function(){
  *   path="/events/past",
  *   summary="Get past events",
  *   tags={"Events"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Response(response=200, description="List of past events")
  * )
  */
 Flight::route('GET /events/past', function(){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     Flight::json(Flight::eventsService()->getPastEvents());
 });
 
@@ -115,6 +125,7 @@ Flight::route('GET /events/past', function(){
  *   path="/events",
  *   summary="Create a new event",
  *   tags={"Events"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\RequestBody(
  *     required=true,
  *     @OA\JsonContent(ref="#/components/schemas/Event")
@@ -123,8 +134,9 @@ Flight::route('GET /events/past', function(){
  * )
  */
 Flight::route('POST /events', function(){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER]);
     $data = Flight::request()->data->getData();
-    Flight::json(Flight::eventsService()->create($data));
+    Flight::json(Flight::eventsService()->add($data));
 });
 
 /**
@@ -132,6 +144,7 @@ Flight::route('POST /events', function(){
  *   path="/events/{id}",
  *   summary="Update event by ID",
  *   tags={"Events"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="id",
  *     in="path",
@@ -146,6 +159,7 @@ Flight::route('POST /events', function(){
  * )
  */
 Flight::route('PUT /events/@id', function($id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER]);
     $data = Flight::request()->data->getData();
     Flight::json(Flight::eventsService()->update($id, $data));
 });
@@ -155,6 +169,7 @@ Flight::route('PUT /events/@id', function($id){
  *   path="/events/{id}",
  *   summary="Delete an event by ID",
  *   tags={"Events"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="id",
  *     in="path",
@@ -165,5 +180,6 @@ Flight::route('PUT /events/@id', function($id){
  * )
  */
 Flight::route('DELETE /events/@id', function($id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER]);
     Flight::json(Flight::eventsService()->delete($id));
 });
