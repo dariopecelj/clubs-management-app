@@ -15,6 +15,7 @@
  *   path="/comments",
  *   summary="Get all comments or filter by event/user",
  *   tags={"Comments"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="event_id",
  *     in="query",
@@ -33,6 +34,7 @@
  * )
  */
 Flight::route('GET /comments', function(){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     $event_id = Flight::request()->query['event_id'] ?? null;
     $user_id = Flight::request()->query['user_id'] ?? null;
     
@@ -50,6 +52,7 @@ Flight::route('GET /comments', function(){
  *   path="/comments/{id}",
  *   summary="Get comment by ID",
  *   tags={"Comments"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="id",
  *     in="path",
@@ -61,6 +64,7 @@ Flight::route('GET /comments', function(){
  * )
  */
 Flight::route('GET /comments/@id', function($id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     Flight::json(Flight::commentsService()->getById($id));
 });
 
@@ -69,6 +73,7 @@ Flight::route('GET /comments/@id', function($id){
  *   path="/comments/count/{event_id}",
  *   summary="Get comment count for event",
  *   tags={"Comments"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="event_id",
  *     in="path",
@@ -79,6 +84,7 @@ Flight::route('GET /comments/@id', function($id){
  * )
  */
 Flight::route('GET /comments/count/@event_id', function($event_id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     Flight::json(Flight::commentsService()->getCommentCount($event_id));
 });
 
@@ -87,6 +93,7 @@ Flight::route('GET /comments/count/@event_id', function($event_id){
  *   path="/comments",
  *   summary="Create a new comment",
  *   tags={"Comments"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\RequestBody(
  *     required=true,
  *     @OA\JsonContent(ref="#/components/schemas/Comment")
@@ -95,6 +102,7 @@ Flight::route('GET /comments/count/@event_id', function($event_id){
  * )
  */
 Flight::route('POST /comments', function(){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     $data = Flight::request()->data->getData();
     Flight::json(Flight::commentsService()->create($data));
 });
@@ -104,6 +112,7 @@ Flight::route('POST /comments', function(){
  *   path="/comments/{id}",
  *   summary="Update comment by ID",
  *   tags={"Comments"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="id",
  *     in="path",
@@ -118,6 +127,7 @@ Flight::route('POST /comments', function(){
  * )
  */
 Flight::route('PUT /comments/@id', function($id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     $data = Flight::request()->data->getData();
     Flight::json(Flight::commentsService()->update($id, $data));
 });
@@ -127,6 +137,7 @@ Flight::route('PUT /comments/@id', function($id){
  *   path="/comments/{id}",
  *   summary="Delete a comment by ID",
  *   tags={"Comments"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="id",
  *     in="path",
@@ -137,5 +148,6 @@ Flight::route('PUT /comments/@id', function($id){
  * )
  */
 Flight::route('DELETE /comments/@id', function($id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER]);
     Flight::json(Flight::commentsService()->delete($id));
 });

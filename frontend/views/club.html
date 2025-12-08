@@ -1,13 +1,12 @@
-
-  <div class="your-club-container">
+<div class="your-club-container">
     <div class="club-header-section">
       <div class="club-info">
         <div class="club-logo">
-          <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=150&h=150&fit=crop" alt="Tech Club Logo">
+          <img src="assets/images/logo.jpg">
         </div>
         <div class="club-details">
-          <h1 class="club-name">Tech Innovation Club</h1>
-          <p class="club-description">Building the future through technology and innovation</p>
+          <h1 class="club-name">You do not have a Club</h1>
+          <p class="club-description">Create your own today!</p>
           <div class="club-stats">
             <span class="stat-item">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -16,7 +15,7 @@
                 <line x1="6" y1="2" x2="6" y2="5" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
                 <line x1="10" y1="2" x2="10" y2="5" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
               </svg>
-              12 Events
+              <span id="events-count"></span>
             </span>
           </div>
         </div>
@@ -76,25 +75,34 @@
     </div>
   </div>
 
-  <!-- Edit Club Modal -->
+  <!-- Create/Edit Club Modal -->
   <div class="modal" id="club-modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title">Edit Club</h3>
+        <h3 class="modal-title" id="club-modal-title">Create New Club</h3>
         <button class="close-btn" id="close-club-modal">&times;</button>
       </div>
       <form id="club-form">
         <div class="form-group">
           <label class="form-label">Club Name</label>
-          <input type="text" class="form-input" id="club-name" required>
+          <input 
+            type="text" 
+            class="form-input" 
+            id="club-name" 
+            name="name"
+            placeholder="Enter club name" 
+            required
+          >
         </div>
         <div class="form-group">
-          <label class="form-label">Description</label>
-          <textarea class="form-textarea" id="club-description" required></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Club Logo URL</label>
-          <input type="url" class="form-input" id="club-logo" placeholder="https://example.com/logo.jpg">
+          <label class="form-label">Club Description</label>
+          <textarea 
+            class="form-input form-textarea" 
+            id="club-description" 
+            name="description"
+            placeholder="Enter club description" 
+            required
+          ></textarea>
         </div>
         <div class="form-actions">
           <button type="submit" class="submit-btn">Save Changes</button>
@@ -104,37 +112,56 @@
     </div>
   </div>
 
-  <!-- Add/Edit Event Modal -->
-  <div class="modal" id="event-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title" id="event-modal-title">Add New Event</h3>
-        <button class="close-btn" id="close-event-modal">&times;</button>
+<div class="modal" id="event-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title" id="event-modal-title">Add New Event</h3>
+      <button class="close-btn" id="close-event-modal">&times;</button>
+    </div>
+    <form id="event-form">
+      <input type="hidden" id="event-id">
+
+      <div class="form-group">
+        <label class="form-label">Event Name</label>
+        <input type="text" class="form-input" id="event-name" required>
       </div>
-      <form id="event-form">
-        <input type="hidden" id="event-id">
-        <div class="form-group">
-          <label class="form-label">Event Name</label>
-          <input type="text" class="form-input" id="event-name" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Event Date</label>
-          <input type="date" class="form-input" id="event-date" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Event Image URL</label>
-          <input type="url" class="form-input" id="event-image" placeholder="https://example.com/event.jpg">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Registered Count</label>
-          <input type="number" class="form-input" id="event-registered" min="0" value="0" required>
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="submit-btn">Save Event</button>
-          <button type="button" class="cancel-btn cancel-event-modal">Cancel</button>
-        </div>
-      </form>
+
+      <div class="form-group">
+        <label class="form-label">Event Date</label>
+        <input type="date" class="form-input" id="event-date" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" id="event-description"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Location</label>
+        <input type="text" class="form-input" id="event-location">
+      </div>
+
+
+      <div class="form-actions">
+        <button type="submit" class="submit-btn">Save Event</button>
+        <button type="button" class="cancel-btn cancel-event-modal">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="delete-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="delete-modal-title">Delete Item</h2>
+      <span class="close" id="close-delete-modal">&times;</span>
+    </div>
+    <div class="modal-body">
+      <p id="delete-modal-message">Are you sure you want to delete this Event? This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="cancel-btn" id="cancel-delete-btn">Cancel</button>
+      <button type="button" class="delete-btn" id="confirm-delete-btn">Delete</button>
     </div>
   </div>
-
-
+</div>

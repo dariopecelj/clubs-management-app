@@ -14,6 +14,7 @@
  *   path="/registrations",
  *   summary="Get all registrations or filter by event/user",
  *   tags={"Registrations"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="event_id",
  *     in="query",
@@ -32,6 +33,7 @@
  * )
  */
 Flight::route('GET /registrations', function(){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER]);
     $event_id = Flight::request()->query['event_id'] ?? null;
     $user_id = Flight::request()->query['user_id'] ?? null;
     
@@ -49,6 +51,7 @@ Flight::route('GET /registrations', function(){
  *   path="/registrations/{id}",
  *   summary="Get registration by ID",
  *   tags={"Registrations"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="id",
  *     in="path",
@@ -60,6 +63,7 @@ Flight::route('GET /registrations', function(){
  * )
  */
 Flight::route('GET /registrations/@id', function($id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     Flight::json(Flight::registrationsService()->getById($id));
 });
 
@@ -68,6 +72,7 @@ Flight::route('GET /registrations/@id', function($id){
  *   path="/registrations/check/{user_id}/{event_id}",
  *   summary="Check if user is registered for event",
  *   tags={"Registrations"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="user_id",
  *     in="path",
@@ -84,6 +89,7 @@ Flight::route('GET /registrations/@id', function($id){
  * )
  */
 Flight::route('GET /registrations/check/@user_id/@event_id', function($user_id, $event_id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     Flight::json(Flight::registrationsService()->isUserRegistered($user_id, $event_id));
 });
 
@@ -92,6 +98,7 @@ Flight::route('GET /registrations/check/@user_id/@event_id', function($user_id, 
  *   path="/registrations/count/{event_id}",
  *   summary="Get registration count for event",
  *   tags={"Registrations"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="event_id",
  *     in="path",
@@ -102,6 +109,7 @@ Flight::route('GET /registrations/check/@user_id/@event_id', function($user_id, 
  * )
  */
 Flight::route('GET /registrations/count/@event_id', function($event_id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     Flight::json(Flight::registrationsService()->getRegistrationCount($event_id));
 });
 
@@ -110,6 +118,7 @@ Flight::route('GET /registrations/count/@event_id', function($event_id){
  *   path="/registrations/user/{user_id}/upcoming",
  *   summary="Get upcoming events for user",
  *   tags={"Registrations"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="user_id",
  *     in="path",
@@ -120,6 +129,7 @@ Flight::route('GET /registrations/count/@event_id', function($event_id){
  * )
  */
 Flight::route('GET /registrations/user/@user_id/upcoming', function($user_id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     Flight::json(Flight::registrationsService()->getUpcomingEventsByUser($user_id));
 });
 
@@ -128,6 +138,7 @@ Flight::route('GET /registrations/user/@user_id/upcoming', function($user_id){
  *   path="/registrations",
  *   summary="Create a new registration",
  *   tags={"Registrations"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\RequestBody(
  *     required=true,
  *     @OA\JsonContent(ref="#/components/schemas/Registration")
@@ -136,6 +147,7 @@ Flight::route('GET /registrations/user/@user_id/upcoming', function($user_id){
  * )
  */
 Flight::route('POST /registrations', function(){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     $data = Flight::request()->data->getData();
     Flight::json(Flight::registrationsService()->create($data));
 });
@@ -145,6 +157,7 @@ Flight::route('POST /registrations', function(){
  *   path="/registrations/register",
  *   summary="Register user for event",
  *   tags={"Registrations"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\RequestBody(
  *     required=true,
  *     @OA\JsonContent(
@@ -156,6 +169,7 @@ Flight::route('POST /registrations', function(){
  * )
  */
 Flight::route('POST /registrations/register', function(){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     $data = Flight::request()->data->getData();
     Flight::json(Flight::registrationsService()->registerUser($data['user_id'], $data['event_id']));
 });
@@ -165,6 +179,7 @@ Flight::route('POST /registrations/register', function(){
  *   path="/registrations/{id}",
  *   summary="Delete a registration by ID",
  *   tags={"Registrations"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="id",
  *     in="path",
@@ -175,6 +190,7 @@ Flight::route('POST /registrations/register', function(){
  * )
  */
 Flight::route('DELETE /registrations/@id', function($id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER]);
     Flight::json(Flight::registrationsService()->delete($id));
 });
 
@@ -183,6 +199,7 @@ Flight::route('DELETE /registrations/@id', function($id){
  *   path="/registrations/unregister/{user_id}/{event_id}",
  *   summary="Unregister user from event",
  *   tags={"Registrations"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="user_id",
  *     in="path",
@@ -199,5 +216,6 @@ Flight::route('DELETE /registrations/@id', function($id){
  * )
  */
 Flight::route('DELETE /registrations/unregister/@user_id/@event_id', function($user_id, $event_id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     Flight::json(Flight::registrationsService()->unregisterUser($user_id, $event_id));
 });

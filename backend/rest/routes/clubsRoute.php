@@ -16,6 +16,7 @@
  *   path="/clubs",
  *   summary="Get all clubs or search by term",
  *   tags={"Clubs"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="search",
  *     in="query",
@@ -27,6 +28,7 @@
  * )
  */
 Flight::route('GET /clubs', function(){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     $search = Flight::request()->query['search'] ?? null;
     
     if($search){
@@ -41,6 +43,7 @@ Flight::route('GET /clubs', function(){
  *   path="/clubs/{id}",
  *   summary="Get club by ID",
  *   tags={"Clubs"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="id",
  *     in="path",
@@ -52,6 +55,7 @@ Flight::route('GET /clubs', function(){
  * )
  */
 Flight::route('GET /clubs/@id', function($id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     Flight::json(Flight::clubsService()->getById($id));
 });
 
@@ -60,6 +64,7 @@ Flight::route('GET /clubs/@id', function($id){
  *   path="/clubs/creator/{creator_user_id}",
  *   summary="Get clubs by creator",
  *   tags={"Clubs"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="creator_user_id",
  *     in="path",
@@ -70,6 +75,7 @@ Flight::route('GET /clubs/@id', function($id){
  * )
  */
 Flight::route('GET /clubs/creator/@creator_user_id', function($creator_user_id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     Flight::json(Flight::clubsService()->getClubsByCreator($creator_user_id));
 });
 
@@ -78,6 +84,7 @@ Flight::route('GET /clubs/creator/@creator_user_id', function($creator_user_id){
  *   path="/clubs",
  *   summary="Create a new club",
  *   tags={"Clubs"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\RequestBody(
  *     required=true,
  *     @OA\JsonContent(ref="#/components/schemas/Club")
@@ -86,8 +93,12 @@ Flight::route('GET /clubs/creator/@creator_user_id', function($creator_user_id){
  * )
  */
 Flight::route('POST /clubs', function(){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER, Roles::USER]);
     $data = Flight::request()->data->getData();
-    Flight::json(Flight::clubsService()->create($data));
+    $currentUser = Flight::get('user');
+    
+    $result = Flight::clubsService()->addClubAndUpgradeUser($data, $currentUser);
+    Flight::json($result);
 });
 
 /**
@@ -95,6 +106,7 @@ Flight::route('POST /clubs', function(){
  *   path="/clubs/{id}",
  *   summary="Update club by ID",
  *   tags={"Clubs"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="id",
  *     in="path",
@@ -109,6 +121,7 @@ Flight::route('POST /clubs', function(){
  * )
  */
 Flight::route('PUT /clubs/@id', function($id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER]);
     $data = Flight::request()->data->getData();
     Flight::json(Flight::clubsService()->update($id, $data));
 });
@@ -118,6 +131,7 @@ Flight::route('PUT /clubs/@id', function($id){
  *   path="/clubs/{id}",
  *   summary="Delete a club by ID",
  *   tags={"Clubs"},
+ *   security={{"BearerAuth": {}}},
  *   @OA\Parameter(
  *     name="id",
  *     in="path",
@@ -128,5 +142,6 @@ Flight::route('PUT /clubs/@id', function($id){
  * )
  */
 Flight::route('DELETE /clubs/@id', function($id){
+    Flight::auth_middleware()->authorizeRoles([Roles::ADMIN, Roles::CLUB_OWNER]);
     Flight::json(Flight::clubsService()->delete($id));
 });

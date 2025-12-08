@@ -43,5 +43,42 @@ class UsersService extends BaseService
         }
         return $users;
     }
+
+    public function updateProfile($id, $data) {
+        if (!is_numeric($id) || $id <= 0) {
+            throw new Exception("ID must be a positive number");
+        }
+
+        if (!is_array($data) || empty($data)) {
+            throw new Exception("Update data must be a non-empty array");
+        }
+
+        if (!empty($data['password'])) {
+            $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+        }
+
+        if (!empty($data['full_name'])) {
+            $data['full_name'] = $data['full_name'];
+        }
+
+        return $this->dao->update($data, $id);
+    }
+
+    public function add($data) {
+    if (!is_array($data) || empty($data)) {
+        throw new Exception("User data must be a non-empty array");
+    }
+
+    if (empty($data['email']) || empty($data['password']) || empty($data['full_name'])) {
+        throw new Exception("Email, password, and full name are required");
+    }
+
+    if (!empty($data['password'])) {
+        $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+    }
+
+    return parent::add($data);
+}
+
 }
 ?>
