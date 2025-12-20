@@ -45,16 +45,19 @@ Flight::register('contactMessageService', 'ContactMessageService');
 Flight::register('auth_service', 'AuthService');
 Flight::register('auth_middleware', 'AuthMiddleware');
 
-Flight::route('/*', function () {
+// Use Flight::before('start') instead of Flight::route('/*')
+Flight::before('start', function() {
     $url = Flight::request()->url;
     
+    // Skip auth for login/register
     if (
         strpos($url, '/auth/login') === 0 ||
         strpos($url, '/auth/register') === 0
     ) {
-        return TRUE;
+        return;
     }
     
+    // Verify token for all other routes
     try {
         $headers = getallheaders();
         $token = $headers['Authorization'] ?? $headers['authorization'] ?? null;
@@ -64,7 +67,6 @@ Flight::route('/*', function () {
         }
         
         Flight::auth_middleware()->verifyToken($token);
-        return TRUE;
     } catch (Exception $e) {
         Flight::halt(401, "Unauthorized: " . $e->getMessage());
     }
