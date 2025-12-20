@@ -1,4 +1,108 @@
 var ClubsService = {
+
+    init: function() {
+        $("#create-club-form").validate({
+            rules: {
+                name: {
+                    required: true,
+                    minlength: 3
+                },
+                description: {
+                    required: true,
+                    minlength: 10
+                },
+                logo: {
+                    required: true,
+                    url: true
+                }
+            },
+            messages: {
+                name: {
+                    required: 'Please enter club name',
+                    minlength: 'Name must be at least 3 characters'
+                },
+                description: {
+                    required: 'Please enter club description',
+                    minlength: 'Description must be at least 10 characters'
+                },
+                logo: {
+                    required: 'Please enter logo URL',
+                    url: 'Please enter a valid URL'
+                }
+            },
+            submitHandler: function(form) {
+                let clubData = Object.fromEntries(new FormData(form).entries());
+                
+                const user = UserService.getCurrentUser();
+                if (user) {
+                    clubData.creator_user_id = user.id;
+                    if (clubData.name) {
+                        clubData.club_name = clubData.name;
+                        delete clubData.name;
+                    }
+                }
+                
+                ClubsService.createClub(clubData);
+                form.reset();
+            }
+        });
+
+        $("#club-form").validate({
+            rules: {
+                name: {
+                    required: true,
+                    minlength: 3
+                },
+                description: {
+                    required: true,
+                    minlength: 10
+                }
+            },
+            messages: {
+                name: {
+                    required: 'Please enter club name',
+                    minlength: 'Name must be at least 3 characters'
+                },
+                description: {
+                    required: 'Please enter club description',
+                    minlength: 'Description must be at least 10 characters'
+                }
+            }
+        });
+
+        $("#admin-club-form").validate({
+            rules: {
+                name: {
+                    required: true,
+                    minlength: 3
+                },
+                description: {
+                    required: true,
+                    minlength: 10
+                },
+                creator_user_id: {
+                    required: true,
+                    number: true,
+                    min: 1
+                }
+            },
+            messages: {
+                name: {
+                    required: 'Please enter club name',
+                    minlength: 'Name must be at least 3 characters'
+                },
+                description: {
+                    required: 'Please enter description',
+                    minlength: 'Description must be at least 10 characters'
+                },
+                creator_user_id: {
+                    required: 'Please enter user ID',
+                    number: 'Please enter a valid number',
+                    min: 'User ID must be at least 1'
+                }
+            }
+        });
+    },
     
     getAllClubs: function(searchTerm, callback, errorCallback) {
         let url = 'clubs';
@@ -44,13 +148,12 @@ var ClubsService = {
             return;
         }
 
-        $.blockUI();
+        $.blockUI({ message: '<h3>Processing...</h3>' });
 
         RestClient.post('clubs', JSON.stringify(clubData), function(response) {
             $.unblockUI();
             toastr.success('Club created successfully! You are now a Club Owner.');
             
-
             if (response.token) {
                 localStorage.setItem("user_token", response.token);
                 UserService.updateAuthButton();
@@ -78,7 +181,7 @@ var ClubsService = {
             return;
         }
 
-        $.blockUI();
+        $.blockUI({ message: '<h3>Processing...</h3>' });
 
         RestClient.put('clubs/' + clubId, JSON.stringify(clubData), function(response) {
             $.unblockUI();
@@ -100,7 +203,7 @@ var ClubsService = {
             return;
         }
 
-        $.blockUI();
+        $.blockUI({ message: '<h3>Processing...</h3>' });
 
         RestClient.delete('clubs/' + clubId, null, function(response) {
             $.unblockUI();

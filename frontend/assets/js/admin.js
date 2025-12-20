@@ -145,12 +145,18 @@ toastr.options.timeOut = 3000;
         editId = window.adminEditId = id;
         const user = users.find(u => u.id === id);
         
+        document.getElementById('admin-user-form').reset();
+        const validator = $('#admin-user-form').validate();
+        validator.resetForm();
+        $('#admin-user-form').find('.error').removeClass('error');
+        
         document.getElementById('admin-user-modal-title').textContent = 'Edit User';
         document.getElementById('admin-user-id').value = user.id;
         document.getElementById('admin-user-name').value = user.full_name || user.name || '';
         document.getElementById('admin-user-email').value = user.email;
         document.getElementById('admin-user-role').value = user.role;
         document.getElementById('admin-user-password').value = '';
+        
         document.getElementById('admin-user-modal').classList.add('active');
     };
 
@@ -177,14 +183,39 @@ toastr.options.timeOut = 3000;
         editId = window.adminEditId = id;
         const event = events.find(e => e.id === id);
         
+        if (!event) {
+            toastr.error('Event not found');
+            return;
+        }
+        
+        document.getElementById('admin-event-form').reset();
+        const validator = $('#admin-event-form').validate();
+        validator.resetForm();
+        $('#admin-event-form').find('.error').removeClass('error');
+        
         document.getElementById('admin-event-modal-title').textContent = 'Edit Event';
         document.getElementById('admin-event-id').value = event.id;
         document.getElementById('admin-event-name').value = event.title;
-        document.getElementById('admin-event-club').value = event.club_id || '';
-        document.getElementById('admin-event-date').value = event.event_date;
-        document.getElementById('admin-event-modal').classList.add('active');
+        document.getElementById('admin-event-date').value = event.event_date.split('T')[0];
         
-        loadClubsForDropdown();
+        const descField = document.getElementById('admin-event-description');
+        if (descField) {
+            descField.value = event.description || '';
+        }
+        
+        const locationField = document.getElementById('admin-event-location');
+        if (locationField) {
+            locationField.value = event.location || '';
+        }
+        
+        loadClubsForDropdown(function() {
+            const clubSelect = document.getElementById('admin-event-club');
+            if (clubSelect) {
+                clubSelect.value = event.club_id || '';
+            }
+        });
+        
+        document.getElementById('admin-event-modal').classList.add('active');
     };
 
     window.deleteEvent = function(id) {
@@ -210,11 +241,17 @@ toastr.options.timeOut = 3000;
         editId = window.adminEditId = id;
         const club = clubs.find(c => c.id === id);
         
+        document.getElementById('admin-club-form').reset();
+        const validator = $('#admin-club-form').validate();
+        validator.resetForm();
+        $('#admin-club-form').find('.error').removeClass('error');
+        
         document.getElementById('admin-club-modal-title').textContent = 'Edit Club';
         document.getElementById('admin-club-id').value = club.id;
         document.getElementById('admin-club-name').value = club.club_name;
         document.getElementById('admin-club-description').value = club.description || '';
         document.getElementById('admin-club-user-id').value = club.creator_user_id || club.user_id || '';
+        
         document.getElementById('admin-club-modal').classList.add('active');
     };
 
@@ -236,18 +273,25 @@ toastr.options.timeOut = 3000;
         };
     };
 
-    function loadClubsForDropdown() {
+    function loadClubsForDropdown(callback) {
         const clubSelect = document.getElementById('admin-event-club');
-        if (!clubSelect) return;
+        if (!clubSelect) {
+            if (callback) callback();
+            return;
+        }
         
         ClubsService.getAllClubs(null, function(response) {
-            clubSelect.innerHTML = '';
+            clubSelect.innerHTML = '<option value="">-- Select Club --</option>';
             response.forEach(club => {
                 const option = document.createElement('option');
                 option.value = club.id;
                 option.textContent = club.club_name;
                 clubSelect.appendChild(option);
             });
+            if (callback) callback();
+        }, function(error) {
+            toastr.error('Failed to load clubs');
+            if (callback) callback();
         });
     }
 
@@ -256,6 +300,10 @@ toastr.options.timeOut = 3000;
             return;
         }
         window.adminInitialized = true;
+
+        UserService.init();
+        ClubsService.init();
+        EventsService.init();
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -285,20 +333,34 @@ toastr.options.timeOut = 3000;
             document.getElementById('admin-user-form').reset();
             document.getElementById('admin-user-id').value = '';
             document.getElementById('admin-user-modal').classList.add('active');
+            
+            const validator = $('#admin-user-form').validate();
+            validator.resetForm();
+            $('#admin-user-form').find('.error').removeClass('error');
         });
 
         document.getElementById('admin-close-user-modal').addEventListener('click', () => {
             document.getElementById('admin-user-modal').classList.remove('active');
+            const validator = $('#admin-user-form').validate();
+            validator.resetForm();
+            $('#admin-user-form').find('.error').removeClass('error');
         });
 
         document.querySelectorAll('.cancel-admin-user-modal').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.getElementById('admin-user-modal').classList.remove('active');
+                const validator = $('#admin-user-form').validate();
+                validator.resetForm();
+                $('#admin-user-form').find('.error').removeClass('error');
             });
         });
 
         document.getElementById('admin-user-form').addEventListener('submit', (e) => {
             e.preventDefault();
+            
+            if (!$('#admin-user-form').valid()) {
+                return;
+            }
             
             const submitBtn = e.target.querySelector('.submit-btn');
             if (submitBtn.disabled) return;
@@ -348,29 +410,51 @@ toastr.options.timeOut = 3000;
             document.getElementById('admin-event-modal-title').textContent = 'Add Event';
             document.getElementById('admin-event-form').reset();
             document.getElementById('admin-event-id').value = '';
-            document.getElementById('admin-event-modal').classList.add('active');
+            
+            const validator = $('#admin-event-form').validate();
+            validator.resetForm();
+            $('#admin-event-form').find('.error').removeClass('error');
+            
             loadClubsForDropdown();
+            document.getElementById('admin-event-modal').classList.add('active');
         });
 
         document.getElementById('admin-close-event-modal').addEventListener('click', () => {
             document.getElementById('admin-event-modal').classList.remove('active');
+            const validator = $('#admin-event-form').validate();
+            validator.resetForm();
+            $('#admin-event-form').find('.error').removeClass('error');
         });
 
         document.querySelectorAll('.cancel-admin-event-modal').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.getElementById('admin-event-modal').classList.remove('active');
+                const validator = $('#admin-event-form').validate();
+                validator.resetForm();
+                $('#admin-event-form').find('.error').removeClass('error');
             });
         });
 
         document.getElementById('admin-event-form').addEventListener('submit', (e) => {
             e.preventDefault();
             
+            if (!$('#admin-event-form').valid()) {
+                return;
+            }
+            
             const submitBtn = e.target.querySelector('.submit-btn');
             if (submitBtn.disabled) return;
             
+            const clubId = parseInt(document.getElementById('admin-event-club').value);
+            
+            if (!clubId || isNaN(clubId)) {
+                toastr.error('Please select a club');
+                return;
+            }
+            
             const eventData = {
-                title: document.getElementById('admin-event-name').value,
-                club_id: parseInt(document.getElementById('admin-event-club').value),
+                title: document.getElementById('admin-event-name').value.trim(),
+                club_id: clubId,
                 event_date: document.getElementById('admin-event-date').value,
                 description: 'Event description'
             };
@@ -383,7 +467,7 @@ toastr.options.timeOut = 3000;
                     loadEvents();
                 }, function(error) {
                     submitBtn.disabled = false;
-                    toastr.error('Failed to update event');
+                    console.error('Update error:', error);
                 });
             } else {
                 submitBtn.disabled = true;
@@ -393,7 +477,7 @@ toastr.options.timeOut = 3000;
                     loadEvents();
                 }, function(error) {
                     submitBtn.disabled = false;
-                    toastr.error('Failed to create event');
+                    console.error('Create error:', error);
                 });
             }
         });
@@ -405,20 +489,34 @@ toastr.options.timeOut = 3000;
             document.getElementById('admin-club-form').reset();
             document.getElementById('admin-club-id').value = '';
             document.getElementById('admin-club-modal').classList.add('active');
+            
+            const validator = $('#admin-club-form').validate();
+            validator.resetForm();
+            $('#admin-club-form').find('.error').removeClass('error');
         });
 
         document.getElementById('admin-close-club-modal').addEventListener('click', () => {
             document.getElementById('admin-club-modal').classList.remove('active');
+            const validator = $('#admin-club-form').validate();
+            validator.resetForm();
+            $('#admin-club-form').find('.error').removeClass('error');
         });
 
         document.querySelectorAll('.cancel-admin-club-modal').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.getElementById('admin-club-modal').classList.remove('active');
+                const validator = $('#admin-club-form').validate();
+                validator.resetForm();
+                $('#admin-club-form').find('.error').removeClass('error');
             });
         });
 
         document.getElementById('admin-club-form').addEventListener('submit', (e) => {
             e.preventDefault();
+            
+            if (!$('#admin-club-form').valid()) {
+                return;
+            }
             
             const submitBtn = e.target.querySelector('.submit-btn');
             if (submitBtn.disabled) return;

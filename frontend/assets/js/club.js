@@ -186,6 +186,10 @@
         const event = clubEvents.find(e => e.id === id);
         if (!event) return;
 
+        const validator = $('#event-form').validate();
+        validator.resetForm();
+        $('#event-form').find('.error').removeClass('error');
+
         document.getElementById('event-modal-title').textContent = 'Edit Event';
         document.getElementById('event-id').value = event.id;
         document.getElementById('event-name').value = event.title;
@@ -239,6 +243,9 @@
         }
         window.clubInitialized = true;
 
+        ClubsService.init();
+        EventsService.init();
+
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const tabName = this.getAttribute('data-tab');
@@ -256,6 +263,11 @@
                 toastr.error('Club data not loaded');
                 return;
             }
+            
+            const validator = $('#club-form').validate();
+            validator.resetForm();
+            $('#club-form').find('.error').removeClass('error');
+            
             document.getElementById('club-name').value = clubData.club_name || '';
             document.getElementById('club-description').value = clubData.description || '';
             document.getElementById('club-modal').classList.add('active');
@@ -263,16 +275,26 @@
 
         document.getElementById('close-club-modal').addEventListener('click', () => {
             document.getElementById('club-modal').classList.remove('active');
+            const validator = $('#club-form').validate();
+            validator.resetForm();
+            $('#club-form').find('.error').removeClass('error');
         });
 
         document.querySelectorAll('.cancel-club-modal').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.getElementById('club-modal').classList.remove('active');
+                const validator = $('#club-form').validate();
+                validator.resetForm();
+                $('#club-form').find('.error').removeClass('error');
             });
         });
 
         document.getElementById('club-form').addEventListener('submit', (e) => {
             e.preventDefault();
+            
+            if (!$('#club-form').valid()) {
+                return;
+            }
             
             const clubData_form = {
                 club_name: document.getElementById('club-name').value,
@@ -297,21 +319,36 @@
             document.getElementById('event-form').reset();
             document.getElementById('event-id').value = '';
             document.getElementById('event-modal-title').textContent = 'Add New Event';
+            
+            const validator = $('#event-form').validate();
+            validator.resetForm();
+            $('#event-form').find('.error').removeClass('error');
+            
             document.getElementById('event-modal').classList.add('active');
         });
 
         document.getElementById('close-event-modal').addEventListener('click', () => {
             document.getElementById('event-modal').classList.remove('active');
+            const validator = $('#event-form').validate();
+            validator.resetForm();
+            $('#event-form').find('.error').removeClass('error');
         });
 
         document.querySelectorAll('.cancel-event-modal').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.getElementById('event-modal').classList.remove('active');
+                const validator = $('#event-form').validate();
+                validator.resetForm();
+                $('#event-form').find('.error').removeClass('error');
             });
         });
 
         document.getElementById('event-form').addEventListener('submit', (e) => {
             e.preventDefault();
+            
+            if (!$('#event-form').valid()) {
+                return;
+            }
             
             const eventData = {
                 title: document.getElementById('event-name').value.trim(),
@@ -319,19 +356,21 @@
                 club_id: clubData.id
             };
             
-            const imageField = document.getElementById('event-image');
-            if (imageField) {
-                eventData.image = imageField.value.trim() || '';
-            }
-            
             const descField = document.getElementById('event-description');
-            if (descField) {
-                eventData.description = descField.value.trim() || '';
+            if (descField && descField.value.trim()) {
+                eventData.description = descField.value.trim();
+            } else {
+                eventData.description = 'Event description';
             }
             
             const locationField = document.getElementById('event-location');
-            if (locationField) {
-                eventData.location = locationField.value.trim() || '';
+            if (locationField && locationField.value.trim()) {
+                eventData.location = locationField.value.trim();
+            }
+            
+            const imageField = document.getElementById('event-image');
+            if (imageField && imageField.value.trim()) {
+                eventData.image = imageField.value.trim();
             }
 
             if (editMode && editEventId) {

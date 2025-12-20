@@ -3,6 +3,11 @@ $(document).ready(function () {
         defaultView: "home"
     });
 
+    UserService.init();
+    ClubsService.init();
+    EventsService.init();
+    RegistrationsService.init();
+
     const loadedScripts = new Set();
 
     function showSection(viewId) {
