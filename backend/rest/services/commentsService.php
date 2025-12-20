@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/baseService.php';
+require_once __DIR__ . '/BaseService.php';
 require_once __DIR__ . '/../dao/commentsDao.php';  
 
 class CommentsService extends BaseService

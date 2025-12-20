@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/baseDao.php";  
+require_once __DIR__ . "/BaseDao.php";  
 
 class User extends BaseDao {
     
