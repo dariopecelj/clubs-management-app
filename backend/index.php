@@ -1,28 +1,30 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+require './vendor/autoload.php';
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-require './vendor/autoload.php';
 
-$allowed_origins = [
+$allowedOrigins = [
     'http://localhost:3000',
     'https://starfish-app-btyuy.ondigitalocean.app'
 ];
 
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-if (in_array($origin, $allowed_origins)) {
-    header("Access-Control-Allow-Origin: $origin");
-} else {
-    header("Access-Control-Allow-Origin: http://localhost:3000");
-}
-
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
-header("Access-Control-Allow-Credentials: true");
-
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
+Flight::before('start', function () use ($allowedOrigins) {
+    if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowedOrigins)) {
+        header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+        header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
+        header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+        header("Access-Control-Allow-Credentials: true");
+    }
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(204);
+        exit();
+    }
+});
 
 require_once 'data/roles.php';
 
@@ -43,25 +45,26 @@ Flight::register('contactMessageService', 'ContactMessageService');
 Flight::register('auth_service', 'AuthService');
 Flight::register('auth_middleware', 'AuthMiddleware');
 
-Flight::before('start', function() {
+Flight::route('/*', function () {
     $url = Flight::request()->url;
-
+    
     if (
-        str_starts_with($url, '/auth/login') ||
-        str_starts_with($url, '/auth/register')
+        strpos($url, '/auth/login') === 0 ||
+        strpos($url, '/auth/register') === 0
     ) {
-        return;
+        return TRUE;
     }
-
+    
     try {
         $headers = getallheaders();
         $token = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-
+        
         if (!$token) {
             throw new Exception("Missing Authorization header");
         }
-
+        
         Flight::auth_middleware()->verifyToken($token);
+        return TRUE;
     } catch (Exception $e) {
         Flight::halt(401, "Unauthorized: " . $e->getMessage());
     }
