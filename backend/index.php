@@ -3,16 +3,27 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 require './vendor/autoload.php';
 
-// CORS HEADERS
-header("Access-Control-Allow-Origin: http://localhost:3000");
+$allowed_origins = [
+    'http://localhost:3000',
+    'https://starfish-app-btyuy.ondigitalocean.app'
+];
+
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: $origin");
+} else {
+    header("Access-Control-Allow-Origin: http://localhost:3000");
+}
+
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
-
+header("Access-Control-Allow-Credentials: true");
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
 }
+
 require_once 'data/roles.php';
 
 require_once 'rest/services/usersService.php';
@@ -55,7 +66,6 @@ Flight::before('start', function() {
         Flight::halt(401, "Unauthorized: " . $e->getMessage());
     }
 });
-
 
 require_once 'rest/routes/usersRoute.php';
 require_once 'rest/routes/registrationsRoute.php';
