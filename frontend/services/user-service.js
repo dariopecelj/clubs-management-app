@@ -1,6 +1,197 @@
 var UserService = {
+
+    init: function() {
+        $("#login-form").validate({
+            rules: {
+                email: {
+                    required: true,
+                    email: true
+                },
+                password: {
+                    required: true,
+                    minlength: 6
+                }
+            },
+            messages: {
+                email: {
+                    required: 'Please enter your email',
+                    email: 'Please enter a valid email address'
+                },
+                password: {
+                    required: 'Please enter your password',
+                    minlength: 'Password must be at least 6 characters'
+                }
+            },
+            submitHandler: function(form) {
+                let credentials = Object.fromEntries(new FormData(form).entries());
+                UserService.login(credentials);
+            }
+        });
+
+        $("#register-form").validate({
+            rules: {
+                full_name: {
+                    required: true,
+                    minlength: 3
+                },
+                email: {
+                    required: true,
+                    email: true
+                },
+                password: {
+                    required: true,
+                    minlength: 6,
+                    maxlength: 50
+                }
+            },
+            messages: {
+                full_name: {
+                    required: 'Please enter your full name',
+                    minlength: 'Name must be at least 3 characters'
+                },
+                email: {
+                    required: 'Please enter your email',
+                    email: 'Please enter a valid email address'
+                },
+                password: {
+                    required: 'Please enter a password',
+                    minlength: 'Password must be at least 6 characters',
+                    maxlength: 'Password cannot exceed 50 characters'
+                }
+            },
+            submitHandler: function(form) {
+                let userData = Object.fromEntries(new FormData(form).entries());
+                UserService.register(userData);
+            }
+        });
+
+        $("#profile-form").validate({
+            rules: {
+                full_name: {
+                    required: true,
+                    minlength: 3
+                },
+                email: {
+                    required: true,
+                    email: true
+                },
+                password: {
+                    minlength: 6,
+                    maxlength: 50
+                },
+                confirm_password: {
+                    equalTo: "#new-password"
+                }
+            },
+            messages: {
+                full_name: {
+                    required: 'Please enter full name',
+                    minlength: 'Name must be at least 3 characters'
+                },
+                email: {
+                    required: 'Please enter email',
+                    email: 'Please enter a valid email address'
+                },
+                password: {
+                    minlength: 'Password must be at least 6 characters',
+                    maxlength: 'Password cannot exceed 50 characters'
+                },
+                confirm_password: {
+                    equalTo: 'Passwords do not match'
+                }
+            },
+            submitHandler: function(form) {
+                let userData = Object.fromEntries(new FormData(form).entries());
+                
+                delete userData.confirm_password;
+                
+                if (!userData.password || userData.password.trim() === '') {
+                    delete userData.password;
+                }
+                
+                UserService.updateProfile(userData, 
+                    function(response) {
+                        toastr.success('Profile updated successfully!');
+                        if (response.token) {
+                            localStorage.setItem("user_token", response.token);
+                            UserService.updateAuthButton();
+                        }
+                        const modal = document.getElementById('profile-modal');
+                        if (modal) modal.classList.remove('active');
+                    },
+                    function(error) {
+                        toastr.error('Failed to update profile');
+                    }
+                );
+            }
+        });
+
+        $("#editUserForm").validate({
+            rules: {
+                full_name: {
+                    required: true,
+                    minlength: 3
+                },
+                email: {
+                    required: true,
+                    email: true
+                }
+            },
+            messages: {
+                full_name: {
+                    required: 'Please enter full name',
+                    minlength: 'Name must be at least 3 characters'
+                },
+                email: {
+                    required: 'Please enter email',
+                    email: 'Please enter a valid email address'
+                }
+            },
+            submitHandler: function(form) {
+                let userData = Object.fromEntries(new FormData(form).entries());
+                let userId = $(form).data('user-id');
+                UserService.updateUser(userId, userData);
+                form.reset();
+            }
+        });
+
+        $("#admin-user-form").validate({
+            rules: {
+                full_name: {
+                    required: true,
+                    minlength: 3
+                },
+                email: {
+                    required: true,
+                    email: true
+                },
+                password: {
+                    minlength: 6,
+                    maxlength: 50
+                },
+                role: 'required'
+            },
+            messages: {
+                full_name: {
+                    required: 'Please enter name',
+                    minlength: 'Name must be at least 3 characters'
+                },
+                email: {
+                    required: 'Please enter email',
+                    email: 'Please enter a valid email address'
+                },
+                password: {
+                    minlength: 'Password must be at least 6 characters',
+                    maxlength: 'Password cannot exceed 50 characters'
+                },
+                role: 'Please select a role'
+            }
+        });
+    },
     
     login: function (entity) {
+        $.blockUI({ message: '<h3>Logging in...</h3>' });
+        
         $.ajax({
             url: Constants.PROJECT_BASE_URL + "auth/login",
             type: "POST",
@@ -8,6 +199,7 @@ var UserService = {
             contentType: "application/json",
             dataType: "json",
             success: function (result) {
+                $.unblockUI();
                 console.log(result);
                 localStorage.setItem("user_token", result.data.token);
                 toastr.success("Login successful!");
@@ -15,12 +207,15 @@ var UserService = {
                 window.location.hash = "#home";
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.unblockUI();
                 toastr.error(XMLHttpRequest?.responseText ? XMLHttpRequest.responseText : 'Error');
             },
         });
     },
 
     register: function (entity) {
+        $.blockUI({ message: '<h3>Creating account...</h3>' });
+        
         $.ajax({
             url: Constants.PROJECT_BASE_URL + "auth/register",
             type: "POST",
@@ -28,6 +223,7 @@ var UserService = {
             contentType: "application/json",
             dataType: "json",
             success: function (result) {
+                $.unblockUI();
                 console.log(result);
                 toastr.success("Registration successful! Please login.");
                 setTimeout(function() {
@@ -35,6 +231,7 @@ var UserService = {
                 }, 1500);
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.unblockUI();
                 toastr.error(XMLHttpRequest?.responseText ? XMLHttpRequest.responseText : 'Error');
             },
         });
@@ -53,7 +250,6 @@ var UserService = {
             }, 100);
             return;
         }
-
 
         if (token) {
             authBtn.textContent = "Logout";
@@ -82,7 +278,6 @@ var UserService = {
         console.log("Logging out...");
         
         localStorage.clear();
-        
         sessionStorage.clear();
         
         toastr.info("You have been logged out");
@@ -115,7 +310,6 @@ var UserService = {
             navLinks.innerHTML = ""; 
 
             navLinks.innerHTML += `<li><a href="#home" class="nav-link">Home</a></li>`;
-
             navLinks.innerHTML += `<li><a href="#events" class="nav-link">Events</a></li>`;
 
             if (user.role === Constants.ADMIN_ROLE) {
@@ -181,6 +375,8 @@ var UserService = {
         if (data.email) updateData.email = data.email;
         if (data.password) updateData.password = data.password; 
 
+        $.blockUI({ message: '<h3>Updating profile...</h3>' });
+
         $.ajax({
             url: Constants.PROJECT_BASE_URL + "users/" + user.id,
             type: "PUT",
@@ -197,15 +393,18 @@ var UserService = {
                     headers: { "Authorization": "Bearer " + token },
                     dataType: "json",
                     success: function(freshResult) {
+                        $.unblockUI();
                         success(freshResult.data); 
                     },
                     error: function(xhr) {
+                        $.unblockUI();
                         console.error("Failed to fetch updated user:", xhr);
                         success(result.data); 
                     }
                 });
             },
             error: function(xhr) {
+                $.unblockUI();
                 console.error("Error updating profile:", xhr);
                 error(xhr);
             }
@@ -213,7 +412,7 @@ var UserService = {
     },
 
     updateUser: function(userId, userData, callback, errorCallback) {
-        $.blockUI();
+        $.blockUI({ message: '<h3>Processing...</h3>' });
         
         RestClient.put('users/' + userId, JSON.stringify(userData), function(response) {
             $.unblockUI();
@@ -228,7 +427,7 @@ var UserService = {
     },
 
     createUser: function(userData, callback, errorCallback) {
-        $.blockUI();
+        $.blockUI({ message: '<h3>Processing...</h3>' });
         
         RestClient.post('users', JSON.stringify(userData), function(response) {
             $.unblockUI();
@@ -243,8 +442,7 @@ var UserService = {
     },
 
     deleteUser: function(userId, callback, errorCallback) {
-   
-        $.blockUI();
+        $.blockUI({ message: '<h3>Processing...</h3>' });
         
         RestClient.delete('users/' + userId, null, function(response) {
             $.unblockUI();

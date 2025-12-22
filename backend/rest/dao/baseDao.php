@@ -64,6 +64,7 @@ class BaseDao{
         }
     }
     
+
     public function update($entity, $id, $id_column = 'id') {
         if (!is_array($entity)) {
             throw new Exception("Update data must be an array, received: " . gettype($entity));
@@ -71,24 +72,39 @@ class BaseDao{
         if (empty($entity)) {
             throw new Exception("Update data cannot be empty");
         }
+        
         $setParts = [];
         $params = [];
+        
         foreach ($entity as $column => $value) {
             if ($column !== $id_column) {
                 $setParts[] = "$column = :$column";
                 $params[":$column"] = $value;
             }
         }
+        
         if (empty($setParts)) {
             throw new Exception("No fields to update.");
         }
+        
         $query = "UPDATE " . $this->table_name . " SET " . implode(", ", $setParts) . " WHERE $id_column = :id";
         $params[":id"] = $id;
+        
         $stmt = $this->connection->prepare($query);
+        
         if ($stmt->execute($params)) {
+  
             if ($stmt->rowCount() === 0) {
-                throw new Exception("No rows updated. Either the ID does not exist or the data is the same.");
+                $checkQuery = "SELECT COUNT(*) as count FROM " . $this->table_name . " WHERE $id_column = :id";
+                $checkStmt = $this->connection->prepare($checkQuery);
+                $checkStmt->execute([":id" => $id]);
+                $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($result['count'] == 0) {
+                    throw new Exception("Record with ID $id does not exist.");
+                }
             }
+            
             return array_merge($entity, [$id_column => $id]);
         } else {
             throw new Exception("Failed to update entity: " . implode(", ", $stmt->errorInfo()));

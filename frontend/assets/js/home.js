@@ -2,6 +2,8 @@ toastr.options.preventDuplicates = true;
 toastr.options.timeOut = 3000;
 
 function initHome() {
+  ClubsService.init();
+
   const viewEventsBtn = document.getElementById('view-events-btn');
   if (viewEventsBtn) {
     viewEventsBtn.addEventListener('click', () => {
@@ -36,11 +38,6 @@ function initHome() {
       closeCreateClubModal();
     });
   });
-
-  const createClubForm = document.getElementById('create-club-form');
-  if (createClubForm) {
-    createClubForm.addEventListener('submit', handleClubCreation);
-  }
 
   document.querySelectorAll('.modal').forEach(modal => {
     modal.addEventListener('click', (e) => {
@@ -109,51 +106,8 @@ function closeCreateClubModal() {
   const form = document.getElementById('create-club-form');
   if (form) {
     form.reset();
+    $(form).validate().resetForm();
   }
-}
-
-function handleClubCreation(e) {
-  e.preventDefault();
-
-  const user = UserService.getCurrentUser();
-  if (!user) {
-    toastr.error('You must be logged in to create a club');
-    window.location.hash = '#login';
-    return;
-  }
-
-  const clubName = document.getElementById('club-name').value;
-  const clubDescription = document.getElementById('club-description').value;
-  const clubLogoLink = document.getElementById('club-logo-link').value;
-
-  if (!clubName.trim()) {
-    toastr.error('Please enter a club name');
-    return;
-  }
-
-  if (!clubDescription.trim()) {
-    toastr.error('Please enter a club description');
-    return;
-  }
-
-  if (!clubLogoLink.trim()) {
-    toastr.error('Please enter a logo URL');
-    return;
-  }
-
-  const clubData = {
-    club_name: clubName.trim(),
-    description: clubDescription.trim(),
-    logo: clubLogoLink.trim(),
-    creator_user_id: user.id
-  };
-
-  ClubsService.createClub(clubData, function(response) {
-    toastr.success(`Club "${clubName}" created successfully!`);
-    
-    closeCreateClubModal();
-  }, function(error) {
-  });
 }
 
 if (typeof window !== 'undefined') {

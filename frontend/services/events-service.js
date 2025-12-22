@@ -1,4 +1,91 @@
 var EventsService = {
+
+    init: function() {
+        $("#club-form").validate({
+            rules: {
+                name: {
+                    required: true,
+                    minlength: 3,
+                    maxlength: 200
+                },
+                description: {
+                    required: true,
+                    minlength: 10,
+                    maxlength: 1000
+                }
+            },
+            messages: {
+                name: {
+                    required: 'Please enter club name',
+                    minlength: 'Name must be at least 3 characters',
+                    maxlength: 'Name cannot exceed 200 characters'
+                },
+                description: {
+                    required: 'Please enter club description',
+                    minlength: 'Description must be at least 10 characters',
+                    maxlength: 'Description cannot exceed 1000 characters'
+                }
+            }
+        });
+
+        $("#event-form").validate({
+            rules: {
+                name: {
+                    required: true,
+                    minlength: 3,
+                    maxlength: 200
+                },
+                date: {
+                    required: true,
+                    date: true
+                },
+                description: {
+                    maxlength: 1000
+                },
+                location: {
+                    maxlength: 200
+                }
+            },
+            messages: {
+                name: {
+                    required: 'Please enter event name',
+                    minlength: 'Name must be at least 3 characters',
+                    maxlength: 'Name cannot exceed 200 characters'
+                },
+                date: {
+                    required: 'Please select event date',
+                    date: 'Please enter a valid date'
+                },
+                description: {
+                    maxlength: 'Description cannot exceed 1000 characters'
+                },
+                location: {
+                    maxlength: 'Location cannot exceed 200 characters'
+                }
+            }
+        });
+
+        if ($("#admin-event-form").length) {
+            $("#admin-event-form").validate({
+                rules: {
+                    name: {
+                        required: true,
+                        minlength: 3
+                    },
+                    club_id: 'required',
+                    date: 'required'
+                },
+                messages: {
+                    name: {
+                        required: 'Please enter event name',
+                        minlength: 'Name must be at least 3 characters'
+                    },
+                    club_id: 'Please select a club',
+                    date: 'Please select event date'
+                }
+            });
+        }
+    },
     
     getAllEvents: function(callback, errorCallback) {
         RestClient.get('events', function(response) {
@@ -77,7 +164,13 @@ var EventsService = {
             return;
         }
 
-        $.blockUI();
+        if (!eventData.title || !eventData.event_date || !eventData.club_id) {
+            toastr.error('Please fill in all required fields');
+            if (errorCallback) errorCallback({ message: 'Missing required fields' });
+            return;
+        }
+
+        $.blockUI({ message: '<h3>Processing...</h3>' });
         
         RestClient.post('events', JSON.stringify(eventData), function(response) {
             $.unblockUI();
@@ -86,7 +179,8 @@ var EventsService = {
         }, function(error) {
             $.unblockUI();
             console.error('Error creating event:', error);
-            toastr.error(error.responseJSON?.message || 'Failed to create event');
+            const errorMsg = error.responseJSON?.message || error.responseText || 'Failed to create event';
+            toastr.error(errorMsg);
             if (errorCallback) errorCallback(error);
         });
     },
@@ -99,7 +193,13 @@ var EventsService = {
             return;
         }
 
-        $.blockUI();
+        if (!eventData.title || !eventData.event_date) {
+            toastr.error('Please fill in all required fields');
+            if (errorCallback) errorCallback({ message: 'Missing required fields' });
+            return;
+        }
+
+        $.blockUI({ message: '<h3>Processing...</h3>' });
         
         RestClient.put('events/' + eventId, JSON.stringify(eventData), function(response) {
             $.unblockUI();
@@ -108,7 +208,8 @@ var EventsService = {
         }, function(error) {
             $.unblockUI();
             console.error('Error updating event:', error);
-            toastr.error(error.responseJSON?.message || 'Failed to update event');
+            const errorMsg = error.responseJSON?.message || error.responseText || 'Failed to update event';
+            toastr.error(errorMsg);
             if (errorCallback) errorCallback(error);
         });
     },
@@ -121,9 +222,7 @@ var EventsService = {
             return;
         }
 
-    
-
-        $.blockUI();
+        $.blockUI({ message: '<h3>Processing...</h3>' });
         
         RestClient.delete('events/' + eventId, null, function(response) {
             $.unblockUI();
@@ -132,7 +231,7 @@ var EventsService = {
         }, function(error) {
             $.unblockUI();
             console.error('Error deleting event:', error);
-            toastr.error(error.responseJSON?.message || 'Failed to delete event');
+            toastr.error('Failed to delete event');
             if (errorCallback) errorCallback(error);
         });
     },
@@ -158,7 +257,12 @@ if (!UserService.getCurrentUser) {
         const token = localStorage.getItem("user_token");
         if (!token) return null;
         
-        const userData = Utils.parseJwt(token);
-        return userData ? userData.user : null;
+        try {
+            const userData = Utils.parseJwt(token);
+            return userData ? userData.user : null;
+        } catch (e) {
+            console.error('Error parsing user token:', e);
+            return null;
+        }
     };
 }

@@ -4,32 +4,29 @@
  *   @OA\Info(
  *       title="Clubs Management API",
  *       description="Web Programming Project",
- *       version="1.0",
+ *       version="1.0.0",
  *       @OA\Contact(
  *           email="dariopecelj@stu.ibu.edu.ba",
  *           name="Web Programming"
  *       )
  *   ),
- *
  *   @OA\Server(
- *       url=LOCALSERVER,
+ *       url="http://localhost/clubs-management-app/backend",
  *       description="Local API server"
  *   ),
- *
  *   @OA\Server(
- *       url=PRODSERVER,
+ *       url="https://starfish-app-btyuy.ondigitalocean.app/backend",
  *       description="Production API server"
  *   ),
- *
  *   @OA\Components(
  *       @OA\SecurityScheme(
  *           securityScheme="BearerAuth",
  *           type="http",
  *           scheme="bearer",
- *           bearerFormat="JWT"
+ *           bearerFormat="JWT",
+ *           description="Enter JWT token in format: Bearer {your-token}"
  *       )
  *   ),
- *
  *   security={{"BearerAuth": {}}}
  * )
  */

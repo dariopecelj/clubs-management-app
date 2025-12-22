@@ -60,7 +60,7 @@ function renderProfile() {
         card.innerHTML = `
             <div class="club-card-header">
                 <div class="club-card-logo">
-                    <img src="${userClub.logo}" alt="${userClub.club_name}">
+                    <img src="./assets/images/logo.jpg" alt="${userClub.club_name}">
                 </div>
                 <div class="club-card-info">
                     <h3 class="club-card-name">${userClub.club_name}</h3>
@@ -110,6 +110,8 @@ function renderProfile() {
 function initProfile() {
     if (isProfileInitialized) return;
 
+    UserService.init();
+
     const editBtn = document.getElementById("edit-profile-btn");
     if (editBtn) {
         editBtn.addEventListener("click", () => {
@@ -118,49 +120,28 @@ function initProfile() {
             document.getElementById("new-password").value = "";
             document.getElementById("confirm-password").value = "";
             document.getElementById("profile-modal").classList.add("active");
+            $('#profile-form').validate().resetForm();
         });
     }
 
     const closeModal = document.getElementById("close-profile-modal");
-    closeModal?.addEventListener("click", () => document.getElementById("profile-modal").classList.remove("active"));
-    document.querySelectorAll(".cancel-profile-modal").forEach(btn => {
-        btn.addEventListener("click", () => document.getElementById("profile-modal").classList.remove("active"));
+    closeModal?.addEventListener("click", () => {
+        document.getElementById("profile-modal").classList.remove("active");
+        $('#profile-form').validate().resetForm();
     });
-
-    document.getElementById("profile-form")?.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const full_name = document.getElementById("edit-name").value;
-        const email = document.getElementById("edit-email").value;
-        const newPassword = document.getElementById("new-password").value;
-        const confirmPassword = document.getElementById("confirm-password").value;
-
-        if (newPassword || confirmPassword) {
-            if (newPassword !== confirmPassword) {
-                alert("Passwords do not match!");
-                return;
-            }
-            if (newPassword.length < 6) {
-                alert("Password must be at least 6 characters long");
-                return;
-            }
-        }
-
-        const updateData = { full_name, email };
-        if (newPassword) updateData.password = newPassword;
-
-        UserService.updateProfile(updateData, function(updatedUser) {
-            userProfile = updatedUser;
-            toastr.success("Profile updated successfully!");
-            renderProfile();
+    
+    document.querySelectorAll(".cancel-profile-modal").forEach(btn => {
+        btn.addEventListener("click", () => {
             document.getElementById("profile-modal").classList.remove("active");
-        }, function(err) {
-            toastr.error("Failed to update profile");
+            $('#profile-form').validate().resetForm();
         });
     });
 
     document.querySelectorAll(".modal").forEach(modal => {
         modal.addEventListener("click", (e) => {
-            if (e.target === modal) modal.classList.remove("active");
+            if (e.target === modal) {
+                modal.classList.remove("active");
+            }
         });
     });
 

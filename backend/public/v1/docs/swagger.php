@@ -9,12 +9,12 @@ header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 require __DIR__ . '/../../../vendor/autoload.php';
 
 define('LOCALSERVER', 'http://localhost/clubs-management-app/backend/');
-define('PRODSERVER', 'https://lobster-app-czvm2.ondigitalocean.app/backend/');
+define('PRODSERVER', 'https://starfish-app-btyuy.ondigitalocean.app/backend/');
 
 if($_SERVER['SERVER_NAME'] == 'localhost' || $_SERVER['SERVER_NAME'] == '127.0.0.1'){
     define('BASE_URL', 'http://localhost/clubs-management-app/backend/');
 } else {
-    define('BASE_URL', 'https://lobster-app-czvm2.ondigitalocean.app/backend/');
+    define('BASE_URL', 'https://starfish-app-btyuy.ondigitalocean.app/backend/');
 }
 
 $openapi = \OpenApi\Generator::scan([

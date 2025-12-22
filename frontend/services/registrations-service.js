@@ -1,5 +1,23 @@
 var RegistrationsService = {
 
+    init: function() {
+        $("#registrationForm").validate({
+            rules: {
+                user_id: 'required',
+                event_id: 'required'
+            },
+            messages: {
+                user_id: 'Please select a user',
+                event_id: 'Please select an event'
+            },
+            submitHandler: function(form) {
+                let registration = Object.fromEntries(new FormData(form).entries());
+                RegistrationsService.createRegistration(registration);
+                form.reset();
+            }
+        });
+    },
+
     getAllRegistrations: function(callback, errorCallback) {
         RestClient.get('registrations', function(response) {
             if (callback) callback(response);
@@ -77,7 +95,7 @@ var RegistrationsService = {
             return;
         }
 
-        $.blockUI();
+        $.blockUI({ message: '<h3>Processing...</h3>' });
 
         RestClient.post('registrations', JSON.stringify(registrationData), function(response) {
             $.unblockUI();
@@ -98,7 +116,7 @@ var RegistrationsService = {
             return;
         }
 
-        $.blockUI();
+        $.blockUI({ message: '<h3>Processing...</h3>' });
 
         RestClient.post('registrations/register', JSON.stringify({ user_id: userId, event_id: eventId }), function(response) {
             $.unblockUI();
@@ -118,7 +136,7 @@ var RegistrationsService = {
             return;
         }
 
-        $.blockUI();
+        $.blockUI({ message: '<h3>Processing...</h3>' });
 
         RestClient.delete('registrations/' + registrationId, null, function(response) {
             $.unblockUI();
@@ -139,7 +157,7 @@ var RegistrationsService = {
             return;
         }
 
-        $.blockUI();
+        $.blockUI({ message: '<h3>Processing...</h3>' });
 
         RestClient.delete(`registrations/unregister/${userId}/${eventId}`, null, function(response) {
             $.unblockUI();
